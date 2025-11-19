@@ -1,31 +1,25 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import Logo from "../assets/logo/BuStudy.svg";
+import Logo from "../../assets/logo/BuStudy.svg";
 
 const MAIN_COLOR = "#FF7413";
 
-export default function Header() {
+const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="w-full bg-white shadow-sm relative z-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="relative z-20 w-full bg-white shadow-sm">
+      <div className="max-w-5xl px-4 mx-auto sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            <img src={Logo} alt="BuStudy logo" className="h-10 w-auto" />
+            <img src={Logo} alt="BuStudy logo" className="w-auto h-10" />
             <div>
-              <h1
-                className="text-lg font-semibold"
-                style={{ color: MAIN_COLOR }}
-              >
-                BuStudy
-              </h1>
+              <h1 className="text-lg font-semibold">BuStudy</h1>
               <p className="text-xs text-gray-500">Study smarter, together</p>
             </div>
           </div>
 
-          {/* Desktop nav */}
-          <nav className="hidden sm:flex gap-4 items-center">
+          <nav className="items-center hidden gap-4 sm:flex">
             <NavLink
               to="/"
               className={({ isActive }) =>
@@ -41,23 +35,22 @@ export default function Header() {
 
             <NavLink
               to="/help"
-              className="text-sm px-3 py-1 rounded-md border"
+              className="px-3 py-1 text-sm border rounded-md"
               style={{ borderColor: "#eee" }}
             >
               도움말
             </NavLink>
           </nav>
 
-          {/* Mobile hamburger */}
           <div className="sm:hidden">
             <button
               aria-label="메뉴 열기"
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((s) => !s)}
-              className="p-2 rounded-md inline-flex items-center justify-center text-gray-700 hover:bg-gray-100"
+              className="inline-flex items-center justify-center p-2 text-gray-700 rounded-md hover:bg-gray-100"
             >
               <svg
-                className="h-6 w-6"
+                className="w-6 h-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -84,14 +77,13 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile menu panel */}
       {mobileOpen && (
-        <div className="sm:hidden absolute left-0 right-0 bg-white shadow-md border-t">
-          <div className="max-w-5xl mx-auto px-4 py-3 space-y-2">
+        <div className="absolute left-0 right-0 bg-white border-t shadow-md sm:hidden">
+          <div className="max-w-5xl px-4 py-3 mx-auto space-y-2">
             <NavLink
               to="/"
               onClick={() => setMobileOpen(false)}
-              className="block text-base font-medium text-gray-700 px-2 py-2 rounded"
+              className="block px-2 py-2 text-base font-medium text-gray-700 rounded"
               style={{ background: MAIN_COLOR, color: "#fff" }}
             >
               시작하기
@@ -99,7 +91,7 @@ export default function Header() {
             <NavLink
               to="/help"
               onClick={() => setMobileOpen(false)}
-              className="block text-base font-medium text-gray-700 px-2 py-2 rounded border"
+              className="block px-2 py-2 text-base font-medium text-gray-700 border rounded"
               style={{ borderColor: "#eee" }}
             >
               도움말
@@ -109,4 +101,6 @@ export default function Header() {
       )}
     </header>
   );
-}
+};
+
+export default Header;
