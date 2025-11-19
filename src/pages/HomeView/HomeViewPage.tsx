@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
-// Use Vite env variable VITE_KAKAO_KEY or replace the string below.
 const KAKAO_KEY =
   (import.meta.env.VITE_KAKAO_KEY as string) || "YOUR_KAKAO_APP_KEY";
 
-export default function HomeView() {
+const HomeViewPage = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [showPanel, setShowPanel] = useState(false);
   const [from, setFrom] = useState("");
@@ -154,8 +153,8 @@ export default function HomeView() {
     <div className="flex flex-col" style={{ minHeight: "calc(100vh - 64px)" }}>
       {/* Top panel: appears when user clicks '공부 시작하기' */}
       {showPanel && (
-        <div className="bg-white p-4 shadow z-10">
-          <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+        <div className="z-10 p-4 bg-white shadow">
+          <div className="grid items-end max-w-5xl grid-cols-1 gap-3 mx-auto sm:grid-cols-3">
             <div>
               <label className="text-xs text-gray-600">출발지</label>
               <input
@@ -177,7 +176,7 @@ export default function HomeView() {
             <div className="flex gap-2">
               <button
                 onClick={estimateTime}
-                className="bg-orange-500 text-white px-4 py-2 rounded"
+                className="px-4 py-2 text-white bg-orange-500 rounded"
               >
                 예상 시간 계산
               </button>
@@ -203,14 +202,14 @@ export default function HomeView() {
       )}
 
       {/* Map area fills remaining space */}
-      <div className="flex-1 relative">
+      <div className="relative flex-1">
         <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
 
         {/* Floating '공부 시작하기' button on map */}
         <div className="absolute right-4 bottom-6">
           <button
             onClick={() => setShowPanel((s) => !s)}
-            className="bg-orange-500 text-white px-4 py-3 rounded-full shadow-lg"
+            className="px-4 py-3 text-white bg-orange-500 rounded-full shadow-lg"
           >
             공부 시작하기
           </button>
@@ -218,7 +217,7 @@ export default function HomeView() {
 
         {/* Notice about Kakao key if not set */}
         {KAKAO_KEY === "YOUR_KAKAO_APP_KEY" && (
-          <div className="absolute left-4 bottom-6 bg-white p-2 rounded shadow text-xs text-red-600">
+          <div className="absolute p-2 text-xs text-red-600 bg-white rounded shadow left-4 bottom-6">
             Kakao API 키가 설정되어 있지 않습니다. `.env`에 `VITE_KAKAO_KEY`를
             추가하세요.
           </div>
@@ -227,3 +226,5 @@ export default function HomeView() {
     </div>
   );
 }
+
+export default HomeViewPage;
