@@ -24,3 +24,21 @@ dist-ssr
 *.sw?
 
 .env
+
+# Git configuration
+.git/config.local
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# Linux
+*~
