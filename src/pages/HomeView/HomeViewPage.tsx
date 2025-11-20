@@ -7,7 +7,6 @@ import {
 } from "../../hooks/Home/getEstimatedTime";
 import { useAppContext } from "../../context/AppContext";
 
-// Kakao Maps 타입 정의
 type KakaoMap = {
   setBounds: (bounds: unknown) => void;
   setCenter: (latlng: unknown) => void;
@@ -22,37 +21,28 @@ const KAKAO_KEY = import.meta.env.VITE_KAKAO_KEY || "YOUR_KAKAO_APP_KEY";
 const HomeViewPage = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
 
-
-  // UI 상태
   const [showPanel, setShowPanel] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [estimated, setEstimated] = useState<string | null>(null);
 
 
-  // 정류장 검색 상태
   const [selectedFromStop, setSelectedFromStop] = useState<BusStop | null>(
     null
   );
   const [selectedToStop, setSelectedToStop] = useState<BusStop | null>(null);
 
 
-  // 정류장 검색 훅
   const fromStops = useBusStop();
   const toStops = useBusStop();
 
-
-  // 예상 시간 계산 훅
   const estimatedTime = useEstimatedTime();
 
-  // Context
   const { estimatedTime: contextEstimatedTime, setEstimatedTime } = useAppContext();
 
-  // 지도 로딩 상태
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
 
-  // 지도 객체 관리
   const mapInstanceRef = useRef<KakaoMap | null>(null);
   const markersRef = useRef<KakaoMarker[]>([]);
   const currentLocationMarkerRef = useRef<KakaoMarker | null>(null);
@@ -73,7 +63,6 @@ const HomeViewPage = () => {
         const container = mapRef.current;
         if (!container) return;
 
-        // 기본 위치 (서울)
         const defaultLat = 37.5665;
         const defaultLng = 126.978;
 
@@ -86,7 +75,6 @@ const HomeViewPage = () => {
         mapInstanceRef.current = map as KakaoMap;
         setMapLoaded(true);
 
-        // 현재 위치 가져오기
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -94,10 +82,8 @@ const HomeViewPage = () => {
               const lng = position.coords.longitude;
               const locPosition = new window.kakao.maps.LatLng(lat, lng);
 
-              // 지도 중심을 현재 위치로 이동
               (map as KakaoMap).setCenter(locPosition);
 
-              // 현재 위치 마커 생성
               const marker = new window.kakao.maps.Marker({
                 position: locPosition,
               }) as KakaoMarker;
@@ -107,7 +93,6 @@ const HomeViewPage = () => {
             },
             (error) => {
               console.warn("위치 정보를 가져올 수 없습니다:", error);
-              // 위치 정보를 가져오지 못해도 기본 위치로 지도 표시
             },
             {
               enableHighAccuracy: true,
@@ -209,7 +194,6 @@ const HomeViewPage = () => {
       bounds.extend(toLatLng);
       (mapInstanceRef.current as KakaoMap).setBounds(bounds);
 
-      // 카카오 모빌리티 API로 예상 시간 계산
       const result = await estimatedTime.calculateRoute(
         fromLat,
         fromLng,
@@ -295,8 +279,6 @@ const HomeViewPage = () => {
                 placeholder="예: 강남역 (Enter로 정류장 검색)"
               />
 
-
-              {/* 출발지 정류장 목록 */}
               {from &&
                 (fromStops.isLoading ||
                   fromStops.busStops.length > 0 ||
@@ -374,7 +356,6 @@ const HomeViewPage = () => {
                           const lng = Number(result[0].x);
                           toStops.searchNearbyStops(lat, lng);
                         } else {
-                          // 키워드 검색 실패 시 주소 검색 시도
                           const geocoder =
                             new window.kakao.maps.services.Geocoder();
                           geocoder.addressSearch(
@@ -403,8 +384,6 @@ const HomeViewPage = () => {
                 placeholder="예: 판교역 (Enter로 정류장 검색)"
               />
 
-
-              {/* 도착지 정류장 목록 */}
               {to &&
                 (toStops.isLoading ||
                   toStops.busStops.length > 0 ||
@@ -499,12 +478,10 @@ const HomeViewPage = () => {
         </div>
       )}
 
-      {/* 지도 영역 */}
       <div ref={mapRef} className="w-full h-full bg-gray-100" />
 
-      {/* 하단 플로팅 버튼 및 결과 표시 */}
       <div className="absolute right-4 bottom-8 z-10 flex flex-col items-end gap-3">
-        {/* 예상 시간 결과 카드 */}
+
         {contextEstimatedTime && (
           <div className="bg-white rounded-2xl shadow-2xl p-4 min-w-[280px] border border-orange-200">
             <div className="flex items-center gap-2 mb-3">
@@ -534,7 +511,6 @@ const HomeViewPage = () => {
           </div>
         )}
 
-        {/* 공부 시작하기 버튼 */}
         <button
           onClick={() => setShowPanel((s) => !s)}
           className="flex items-center justify-center px-6 py-3 font-bold text-white transition-transform bg-orange-500 rounded-full shadow-xl hover:bg-orange-600 hover:scale-105 active:scale-95"
@@ -543,7 +519,7 @@ const HomeViewPage = () => {
         </button>
       </div>
 
-      {/* 로딩 및 에러 상태 표시 */}
+
       {!mapLoaded && !mapError && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-0">
           <div className="flex flex-col items-center">
