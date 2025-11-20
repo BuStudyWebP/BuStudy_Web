@@ -5,7 +5,7 @@ import {
   formatDuration,
   formatDistance,
 } from "../../hooks/Home/getEstimatedTime";
-import { UseStudyRoute } from "../../contexts/StudyRouteContext";
+import { useAppContext } from "../../context/AppContext";
 
 // Kakao Maps 타입 정의
 type KakaoMap = {
@@ -22,27 +22,34 @@ const KAKAO_KEY = import.meta.env.VITE_KAKAO_KEY || "YOUR_KAKAO_APP_KEY";
 const HomeViewPage = () => {
   const mapRef = useRef<HTMLDivElement | null>(null);
 
+
   // UI 상태
   const [showPanel, setShowPanel] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [estimated, setEstimated] = useState<string | null>(null);
 
+
   // 정류장 검색 상태
+  const [selectedFromStop, setSelectedFromStop] = useState<BusStop | null>(
+    null
+  );
   const [selectedFromStop, setSelectedFromStop] = useState<BusStop | null>(
     null
   );
   const [selectedToStop, setSelectedToStop] = useState<BusStop | null>(null);
 
+
   // 정류장 검색 훅
   const fromStops = useBusStop();
   const toStops = useBusStop();
+
 
   // 예상 시간 계산 훅
   const estimatedTime = useEstimatedTime();
 
   // Context
-  const studyRoute = UseStudyRoute();
+  const { estimatedTime: contextEstimatedTime, setEstimatedTime } = useAppContext();
 
   // 지도 로딩 상태
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -57,6 +64,7 @@ const HomeViewPage = () => {
     if (mapInstanceRef.current || !mapRef.current) return;
 
     const scriptId = "kakao-map-sdk";
+
 
     const initMap = () => {
       if (!window.kakao || !window.kakao.maps) {
@@ -74,6 +82,7 @@ const HomeViewPage = () => {
 
         const options = {
           center: new window.kakao.maps.LatLng(defaultLat, defaultLng),
+          level: 4,
           level: 4,
         };
 
@@ -121,6 +130,7 @@ const HomeViewPage = () => {
 
     let script = document.getElementById(scriptId) as HTMLScriptElement;
 
+
     if (!script) {
       script = document.createElement("script");
       script.id = scriptId;
@@ -158,7 +168,12 @@ const HomeViewPage = () => {
     const marker = new window.kakao.maps.Marker({
       position: latlng as never,
     }) as KakaoMarker;
+
+    const marker = new window.kakao.maps.Marker({
+      position: latlng as never,
+    }) as KakaoMarker;
     marker.setMap(mapInstanceRef.current as KakaoMap);
+
 
     const infoContent = `<div style="padding:5px; font-size:12px; color:#000;">${title}</div>`;
     const info = new window.kakao.maps.InfoWindow({
@@ -176,6 +191,7 @@ const HomeViewPage = () => {
 
   async function estimateTime() {
     if (!window.kakao || !mapInstanceRef.current) return;
+
 
     if (!selectedFromStop || !selectedToStop) {
       alert("출발 정류장과 도착 정류장을 선택해주세요.");
@@ -208,11 +224,17 @@ const HomeViewPage = () => {
         toLat,
         toLng
       );
+      const result = await estimatedTime.calculateRoute(
+        fromLat,
+        fromLng,
+        toLat,
+        toLng
+      );
 
       if (result) {
         // 소요 시간(분)만 Context에 저장
         const timeInMinutes = Math.round(result.duration / 60);
-        studyRoute.setEstimatedTime(timeInMinutes);
+        setEstimatedTime(timeInMinutes);
 
         const distance = formatDistance(result.distance);
         const duration = formatDuration(result.duration);
@@ -231,6 +253,9 @@ const HomeViewPage = () => {
         <div className="absolute top-0 left-0 right-0 z-20 p-4 bg-white/95 backdrop-blur shadow-md transition-all">
           <div className="grid items-end max-w-5xl grid-cols-1 gap-3 mx-auto sm:grid-cols-[1fr_1fr_auto]">
             <div className="flex flex-col gap-1 relative">
+              <label className="text-xs font-semibold text-gray-600">
+                출발지
+              </label>
               <label className="text-xs font-semibold text-gray-600">
                 출발지
               </label>
@@ -281,13 +306,99 @@ const HomeViewPage = () => {
                         }
                       }
                     );
+                    places.keywordSearch(
+                      from,
+                      (
+                        result: Array<{ x: string; y: string }>,
+                        status: string
+                      ) => {
+                        if (
+                          status === window.kakao.maps.services.Status.OK &&
+                          result[0]
+                        ) {
+                          const lat = Number(result[0].y);
+                          const lng = Number(result[0].x);
+                          fromStops.searchNearbyStops(lat, lng);
+                        } else {
+                          // 키워드 검색 실패 시 주소 검색 시도
+                          const geocoder =
+                            new window.kakao.maps.services.Geocoder();
+                          geocoder.addressSearch(
+                            from,
+                            (
+                              result2: Array<{ x: string; y: string }>,
+                              status2: string
+                            ) => {
+                              if (
+                                status2 ===
+                                  window.kakao.maps.services.Status.OK &&
+                                result2[0]
+                              ) {
+                                const lat = Number(result2[0].y);
+                                const lng = Number(result2[0].x);
+                                fromStops.searchNearbyStops(lat, lng);
+                              }
+                            }
+                          );
+                        }
+                      }
+                    );
                   }
                 }}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-orange-500"
                 placeholder="예: 강남역 (Enter로 정류장 검색)"
               />
 
+
               {/* 출발지 정류장 목록 */}
+              {from &&
+                (fromStops.isLoading ||
+                  fromStops.busStops.length > 0 ||
+                  fromStops.error) && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto z-30">
+                    {fromStops.isLoading && (
+                      <div className="p-3 text-center">
+                        <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
+                        <p className="text-sm text-gray-600 mt-2">
+                          정류장 검색 중...
+                        </p>
+                      </div>
+                    )}
+
+                    {fromStops.error && (
+                      <div className="p-3 text-center text-red-500 text-sm">
+                        {fromStops.error}
+                      </div>
+                    )}
+
+                    {!fromStops.isLoading && fromStops.busStops.length > 0 && (
+                      <div>
+                        <div className="p-2 bg-gray-50 border-b text-xs font-semibold text-gray-700">
+                          근처 정류장 ({fromStops.busStops.length}개)
+                        </div>
+                        {fromStops.busStops.map((stop) => (
+                          <button
+                            key={stop.nodeid}
+                            onClick={() => {
+                              setSelectedFromStop(stop);
+                              setFrom(stop.nodenm);
+                              fromStops.reset();
+                            }}
+                            className="w-full p-3 text-left hover:bg-orange-50 border-b last:border-b-0 transition-colors"
+                          >
+                            <div className="font-medium text-sm text-gray-900">
+                              {stop.nodenm}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              정류소ID: {stop.nodeid} | 도시코드:{" "}
+                              {stop.citycode}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               {from &&
                 (fromStops.isLoading ||
                   fromStops.busStops.length > 0 ||
@@ -341,6 +452,9 @@ const HomeViewPage = () => {
               <label className="text-xs font-semibold text-gray-600">
                 도착지
               </label>
+              <label className="text-xs font-semibold text-gray-600">
+                도착지
+              </label>
               <input
                 value={to}
                 onChange={(e) => {
@@ -388,13 +502,99 @@ const HomeViewPage = () => {
                         }
                       }
                     );
+                    places.keywordSearch(
+                      to,
+                      (
+                        result: Array<{ x: string; y: string }>,
+                        status: string
+                      ) => {
+                        if (
+                          status === window.kakao.maps.services.Status.OK &&
+                          result[0]
+                        ) {
+                          const lat = Number(result[0].y);
+                          const lng = Number(result[0].x);
+                          toStops.searchNearbyStops(lat, lng);
+                        } else {
+                          // 키워드 검색 실패 시 주소 검색 시도
+                          const geocoder =
+                            new window.kakao.maps.services.Geocoder();
+                          geocoder.addressSearch(
+                            to,
+                            (
+                              result2: Array<{ x: string; y: string }>,
+                              status2: string
+                            ) => {
+                              if (
+                                status2 ===
+                                  window.kakao.maps.services.Status.OK &&
+                                result2[0]
+                              ) {
+                                const lat = Number(result2[0].y);
+                                const lng = Number(result2[0].x);
+                                toStops.searchNearbyStops(lat, lng);
+                              }
+                            }
+                          );
+                        }
+                      }
+                    );
                   }
                 }}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-orange-500"
                 placeholder="예: 판교역 (Enter로 정류장 검색)"
               />
 
+
               {/* 도착지 정류장 목록 */}
+              {to &&
+                (toStops.isLoading ||
+                  toStops.busStops.length > 0 ||
+                  toStops.error) && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto z-30">
+                    {toStops.isLoading && (
+                      <div className="p-3 text-center">
+                        <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
+                        <p className="text-sm text-gray-600 mt-2">
+                          정류장 검색 중...
+                        </p>
+                      </div>
+                    )}
+
+                    {toStops.error && (
+                      <div className="p-3 text-center text-red-500 text-sm">
+                        {toStops.error}
+                      </div>
+                    )}
+
+                    {!toStops.isLoading && toStops.busStops.length > 0 && (
+                      <div>
+                        <div className="p-2 bg-gray-50 border-b text-xs font-semibold text-gray-700">
+                          근처 정류장 ({toStops.busStops.length}개)
+                        </div>
+                        {toStops.busStops.map((stop) => (
+                          <button
+                            key={stop.nodeid}
+                            onClick={() => {
+                              setSelectedToStop(stop);
+                              setTo(stop.nodenm);
+                              toStops.reset();
+                            }}
+                            className="w-full p-3 text-left hover:bg-orange-50 border-b last:border-b-0 transition-colors"
+                          >
+                            <div className="font-medium text-sm text-gray-900">
+                              {stop.nodenm}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              정류소ID: {stop.nodeid} | 도시코드:{" "}
+                              {stop.citycode}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               {to &&
                 (toStops.isLoading ||
                   toStops.busStops.length > 0 ||
@@ -463,7 +663,7 @@ const HomeViewPage = () => {
                   fromStops.reset();
                   toStops.reset();
                   estimatedTime.reset();
-                  studyRoute.setEstimatedTime(null);
+                  setEstimatedTime(null);
                 }}
                 className="px-4 py-2 text-sm text-gray-600 bg-gray-100 border rounded hover:bg-gray-200"
               >
@@ -473,6 +673,17 @@ const HomeViewPage = () => {
           </div>
 
           {estimated && (
+            <div className="mt-4 flex flex-col items-center gap-4 w-full">
+              <div className="w-max mx-auto mt-4 p-3 bg-orange-50 border border-orange-100 rounded text-center sm:text-left">
+                <span className="font-bold text-orange-800">🚗 결과: </span>
+                <span className="text-gray-800">{estimated}</span>
+              </div>
+              <button
+                onClick={estimateTime}
+                className="p-4 py-2 text-sm font-bold text-white bg-orange-500 rounded hover:bg-orange-600 active:bg-orange-700"
+              >
+                학습 시작하기
+              </button>
             <div className="mt-4 flex flex-col items-center gap-4 w-full">
               <div className="w-max mx-auto mt-4 p-3 bg-orange-50 border border-orange-100 rounded text-center sm:text-left">
                 <span className="font-bold text-orange-800">🚗 결과: </span>
@@ -495,7 +706,7 @@ const HomeViewPage = () => {
       {/* 하단 플로팅 버튼 및 결과 표시 */}
       <div className="absolute right-4 bottom-8 z-10 flex flex-col items-end gap-3">
         {/* 예상 시간 결과 카드 */}
-        {studyRoute.estimatedTime && (
+        {contextEstimatedTime && (
           <div className="bg-white rounded-2xl shadow-2xl p-4 min-w-[280px] border border-orange-200">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-2xl">🚌</span>
@@ -503,7 +714,7 @@ const HomeViewPage = () => {
             </div>
             <div className="text-center py-4">
               <div className="text-4xl font-bold text-orange-600">
-                {studyRoute.estimatedTime}분
+                {contextEstimatedTime}분
               </div>
               <div className="text-sm text-gray-500 mt-2">예상 소요시간</div>
             </div>
@@ -530,6 +741,7 @@ const HomeViewPage = () => {
           className="flex items-center justify-center px-6 py-3 font-bold text-white transition-transform bg-orange-500 rounded-full shadow-xl hover:bg-orange-600 hover:scale-105 active:scale-95"
         >
           {showPanel ? "패널 숨기기" : "경로 설정하기"}
+          {showPanel ? "패널 숨기기" : "경로 설정하기"}
         </button>
       </div>
 
@@ -550,6 +762,8 @@ const HomeViewPage = () => {
             <p className="text-sm mt-2 text-gray-600">
               1. Kakao Developers에서 <b>사이트 도메인</b> 설정을 확인하세요.
               <br />
+              1. Kakao Developers에서 <b>사이트 도메인</b> 설정을 확인하세요.
+              <br />
               (현재 주소: {window.location.origin})
             </p>
             <p className="text-sm mt-1 text-gray-600">
@@ -563,3 +777,4 @@ const HomeViewPage = () => {
 };
 
 export default HomeViewPage;
+
