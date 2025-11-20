@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useBusStop, type BusStop } from "../../hooks/Home/getBusStop";
+import {
+  useEstimatedTime,
+  formatDuration,
+  formatDistance,
+} from "../../hooks/Home/getEstimatedTime";
 
 // Kakao Maps 타입 정의
 type KakaoMap = {
@@ -23,14 +28,15 @@ const HomeViewPage = () => {
   const [estimated, setEstimated] = useState<string | null>(null);
   
   // 정류장 검색 상태
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedFromStop, setSelectedFromStop] = useState<BusStop | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedToStop, setSelectedToStop] = useState<BusStop | null>(null);
   
   // 정류장 검색 훅
   const fromStops = useBusStop();
   const toStops = useBusStop();
+  
+  // 예상 시간 계산 훅
+  const estimatedTime = useEstimatedTime();
   
   // 지도 로딩 상태
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -160,78 +166,41 @@ const HomeViewPage = () => {
     markersRef.current.push(marker);
   }
 
-  function haversineDistance(a: [number, number], b: [number, number]) {
-    const toRad = (v: number) => (v * Math.PI) / 180;
-    const R = 6371; 
-    const dLat = toRad(b[0] - a[0]);
-    const dLon = toRad(b[1] - a[1]);
-    const lat1 = toRad(a[0]);
-    const lat2 = toRad(b[0]);
-
-    const aa =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-    const c = 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa));
-    return R * c;
-  }
-
   async function estimateTime() {
     if (!window.kakao || !mapInstanceRef.current) return;
     
-    if (!from || !to) {
-      alert("출발지와 도착지를 모두 입력해주세요.");
+    if (!selectedFromStop || !selectedToStop) {
+      alert("출발 정류장과 도착 정류장을 선택해주세요.");
       return;
     }
 
-    const geocoder = new window.kakao.maps.services.Geocoder();
-
-    function geocode(address: string): Promise<[number, number]> {
-      return new Promise((resolve, reject) => {
-        geocoder.addressSearch(
-          address,
-          (result: Array<{x: string; y: string}>, status: string) => {
-            if (status === window.kakao.maps.services.Status.OK && result[0]) {
-              resolve([Number(result[0].y), Number(result[0].x)]);
-            } else {
-              reject(new Error(`주소를 찾을 수 없습니다: ${address}`));
-            }
-          }
-        );
-      });
-    }
-
     try {
-      const fromCoord = await geocode(from);
-      const toCoord = await geocode(to);
+      const fromLat = Number(selectedFromStop.gpslati);
+      const fromLng = Number(selectedFromStop.gpslong);
+      const toLat = Number(selectedToStop.gpslati);
+      const toLng = Number(selectedToStop.gpslong);
 
       clearMarkers();
 
-      const fromLatLng = new window.kakao.maps.LatLng(fromCoord[0], fromCoord[1]);
-      const toLatLng = new window.kakao.maps.LatLng(toCoord[0], toCoord[1]);
+      const fromLatLng = new window.kakao.maps.LatLng(fromLat, fromLng);
+      const toLatLng = new window.kakao.maps.LatLng(toLat, toLng);
 
-      addMarker(fromLatLng, "출발: " + from);
-      addMarker(toLatLng, "도착: " + to);
+      addMarker(fromLatLng, "출발: " + selectedFromStop.nodenm);
+      addMarker(toLatLng, "도착: " + selectedToStop.nodenm);
 
       const bounds = new window.kakao.maps.LatLngBounds();
       bounds.extend(fromLatLng);
       bounds.extend(toLatLng);
       (mapInstanceRef.current as KakaoMap).setBounds(bounds);
 
-      const distKm = haversineDistance(fromCoord, toCoord);
-      const avgSpeedKmh = 30; 
-      const hours = distKm / avgSpeedKmh;
-      const totalMinutes = Math.round(hours * 60);
+      // 카카오 모빌리티 API로 예상 시간 계산
+      const result = await estimatedTime.calculateRoute(fromLat, fromLng, toLat, toLng);
 
-      let timeString = "";
-      if (totalMinutes >= 60) {
-        const h = Math.floor(totalMinutes / 60);
-        const m = totalMinutes % 60;
-        timeString = `${h}시간 ${m}분`;
-      } else {
-        timeString = `${totalMinutes}분`;
+      if (result) {
+        const distance = formatDistance(result.distance);
+        const duration = formatDuration(result.duration);
+        setEstimated(`🚌 거리 ${distance} · 예상 소요시간 ${duration}`);
       }
-
-      setEstimated(`거리 약 ${distKm.toFixed(1)}km · 예상 소요시간 ${timeString}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "알 수 없는 오류";
       setEstimated(`오류: ${message}`);
@@ -422,6 +391,7 @@ const HomeViewPage = () => {
                   setSelectedToStop(null);
                   fromStops.reset();
                   toStops.reset();
+                  estimatedTime.reset();
                 }}
                 className="px-4 py-2 text-sm text-gray-600 bg-gray-100 border rounded hover:bg-gray-200"
               >
