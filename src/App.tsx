@@ -3,6 +3,7 @@ import Header from "./components/Header/Header";
 import HomeViewPage from "./pages/HomeView/HomeViewPage";
 import SubjectRegisterPage from "./pages/SubjectRegister/SubjectRegisterPage";
 import SolveProblemPage from "./pages/SolveProblem/SolveProblemPage";
+import { StudyRouteProvider } from "./contexts/StudyRouteContext";
 
 const NotFoundPage = () => {
   return (
@@ -16,15 +17,17 @@ const NotFoundPage = () => {
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomeViewPage />} />
-        <Route path="/solve" element={<SolveProblemPage />} />
-        <Route path="/subjects" element={<SubjectRegisterPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </BrowserRouter>
+    <StudyRouteProvider>
+      <BrowserRouter>
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomeViewPage />} />
+          <Route path="/solve" element={<SolveProblemPage />} />
+          <Route path="/subjects" element={<SubjectRegisterPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </BrowserRouter>
+    </StudyRouteProvider>
   );
 };
 
