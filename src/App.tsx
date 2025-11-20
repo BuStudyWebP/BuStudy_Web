@@ -1,11 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header";
 import HomeViewPage from "./pages/HomeView/HomeViewPage";
-import SearchStationPage from "./pages/SearchStation/SearchStationPage";
-import CreateProblemPage from "./pages/CreateProblem/CreateProblemPage";
-import TravelTimeCalcPage from "./pages/TravelTimeCalc/TravelTimeCalc";
 import SubjectRegisterPage from "./pages/SubjectRegister/SubjectRegisterPage";
 import SolveProblemPage from "./pages/SolveProblem/SolveProblemPage";
+import { AppProvider } from "./context/AppContext";
 
 const NotFoundPage = () => {
   return (
@@ -19,18 +17,17 @@ const NotFoundPage = () => {
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomeViewPage />} />
-        <Route path="/search" element={<SearchStationPage />} />
-        <Route path="/solve" element={<SolveProblemPage />} />
-        <Route path="/create" element={<CreateProblemPage />} />
-        <Route path="/travel" element={<TravelTimeCalcPage />} />
-        <Route path="/subjects" element={<SubjectRegisterPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </BrowserRouter>
+    <AppProvider>
+      <BrowserRouter>
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomeViewPage />} />
+          <Route path="/solve" element={<SolveProblemPage />} />
+          <Route path="/subjects" element={<SubjectRegisterPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </BrowserRouter>
+    </AppProvider>
   );
 };
 
