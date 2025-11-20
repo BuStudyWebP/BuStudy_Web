@@ -3,7 +3,7 @@ import Header from "./components/Header/Header";
 import HomeViewPage from "./pages/HomeView/HomeViewPage";
 import SubjectRegisterPage from "./pages/SubjectRegister/SubjectRegisterPage";
 import SolveProblemPage from "./pages/SolveProblem/SolveProblemPage";
-import { StudyRouteProvider } from "./contexts/StudyRouteContext";
+import { AppProvider } from "./context/AppContext";
 
 const NotFoundPage = () => {
   return (
@@ -17,7 +17,7 @@ const NotFoundPage = () => {
 
 const App = () => {
   return (
-    <StudyRouteProvider>
+    <AppProvider>
       <BrowserRouter>
         <Header />
         <Routes>
@@ -27,7 +27,7 @@ const App = () => {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
-    </StudyRouteProvider>
+    </AppProvider>
   );
 };
 
