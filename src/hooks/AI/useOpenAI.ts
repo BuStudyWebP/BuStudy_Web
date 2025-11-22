@@ -15,7 +15,8 @@ export const useOpenAI = () => {
 
   const generateFiveMCQ = useCallback(
     async (
-      subjectName: string
+      subjectName: string,
+      estimatedTimeMinutes?: number
     ): Promise<{
       success: boolean;
       data?: MCQ[];
@@ -32,12 +33,20 @@ export const useOpenAI = () => {
         return { success: false, error: err };
       }
 
-      const prompt = `You are a multiple-choice question generator. Produce JSON output only (no extra text). For the subject "${subjectName}", generate an array of exactly 5 multiple-choice questions. Each item must be an object with keys: question (string), options (array of 4 unique strings), answer (one of the options), explanation (a short explanation string). Difficulty: medium. Output example:
+      const count =
+        typeof estimatedTimeMinutes === "number"
+          ? Math.max(1, Math.min(10, Math.round(estimatedTimeMinutes / 2)))
+          : 5;
+
+      const prompt = `당신은 객관식 문제 생성기입니다. 출력은 JSON 배열(추가 텍스트 금지)만 하세요. 과목명 "${subjectName}"에 대해 아래 규칙을 엄격히 지켜 정확히 ${count}개의 객관식 문제를 생성하세요. 각 문제 항목은 다음 키를 가집니다: question (문제 문장은 반드시 한국어), options (서로 다른 4개의 문자열로 이루어진 배열), answer (정답으로 options 중 하나의 문자열), explanation (간단한 해설, 한국어). 난이도는 '중간'을 기본으로 하되, 사용자가 주어진 시간(${
+        estimatedTimeMinutes ?? "미지정"
+      } 분) 안에 풀 수 있도록 문제 수(${count})와 난이도를 적절히 조정하세요. 문제당 소요시간은 평균 약 2분을 가정하세요.
+출력 예시:
 [
-  {"question":"...","options":["a","b","c","d"],"answer":"b","explanation":"..."},
+  {"question":"...","options":["가","나","다","라"],"answer":"나","explanation":"..."},
   ...
 ]
-Make sure JSON is valid.`;
+JSON만 반환하고 따로 설명문을 섞지 마세요.`;
 
       try {
         const res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -93,7 +102,7 @@ Make sure JSON is valid.`;
           return { success: false, error: errMsg, raw: msg };
         }
 
-        const validated: MCQ[] = parsed.slice(0, 5).map((it: any) => ({
+        const validated: MCQ[] = parsed.slice(0, count).map((it: any) => ({
           question: String(it.question ?? ""),
           options: Array.isArray(it.options)
             ? it.options.slice(0, 4).map(String)
