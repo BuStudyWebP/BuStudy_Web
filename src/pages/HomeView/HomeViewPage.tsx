@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useBusStop, type BusStop } from "../../hooks/Home/getBusStop";
 import {
   useEstimatedTime,
@@ -26,19 +27,20 @@ const HomeViewPage = () => {
   const [to, setTo] = useState("");
   const [estimated, setEstimated] = useState<string | null>(null);
 
-
   const [selectedFromStop, setSelectedFromStop] = useState<BusStop | null>(
     null
   );
   const [selectedToStop, setSelectedToStop] = useState<BusStop | null>(null);
-
 
   const fromStops = useBusStop();
   const toStops = useBusStop();
 
   const estimatedTime = useEstimatedTime();
 
-  const { estimatedTime: contextEstimatedTime, setEstimatedTime } = useAppContext();
+  const { estimatedTime: contextEstimatedTime, setEstimatedTime } =
+    useAppContext();
+
+  const navigate = useNavigate();
 
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
@@ -51,7 +53,6 @@ const HomeViewPage = () => {
     if (mapInstanceRef.current || !mapRef.current) return;
 
     const scriptId = "kakao-map-sdk";
-
 
     const initMap = () => {
       if (!window.kakao || !window.kakao.maps) {
@@ -111,7 +112,6 @@ const HomeViewPage = () => {
 
     let script = document.getElementById(scriptId) as HTMLScriptElement;
 
-
     if (!script) {
       script = document.createElement("script");
       script.id = scriptId;
@@ -151,7 +151,6 @@ const HomeViewPage = () => {
     }) as KakaoMarker;
     marker.setMap(mapInstanceRef.current as KakaoMap);
 
-
     const infoContent = `<div style="padding:5px; font-size:12px; color:#000;">${title}</div>`;
     const info = new window.kakao.maps.InfoWindow({
       content: infoContent,
@@ -168,7 +167,6 @@ const HomeViewPage = () => {
 
   async function estimateTime() {
     if (!window.kakao || !mapInstanceRef.current) return;
-
 
     if (!selectedFromStop || !selectedToStop) {
       alert("출발 정류장과 도착 정류장을 선택해주세요.");
@@ -220,9 +218,9 @@ const HomeViewPage = () => {
     <div className="relative w-full" style={{ height: "calc(100vh - 64px)" }}>
       {/* 상단 패널 */}
       {showPanel && (
-        <div className="absolute top-0 left-0 right-0 z-20 p-4 bg-white/95 backdrop-blur shadow-md transition-all">
+        <div className="absolute top-0 left-0 right-0 z-20 p-4 transition-all shadow-md bg-white/95 backdrop-blur">
           <div className="grid items-end max-w-5xl grid-cols-1 gap-3 mx-auto sm:grid-cols-[1fr_1fr_auto]">
-            <div className="flex flex-col gap-1 relative">
+            <div className="relative flex flex-col gap-1">
               <label className="text-xs font-semibold text-gray-600">
                 출발지
               </label>
@@ -283,25 +281,25 @@ const HomeViewPage = () => {
                 (fromStops.isLoading ||
                   fromStops.busStops.length > 0 ||
                   fromStops.error) && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto z-30">
+                  <div className="absolute left-0 right-0 z-30 mt-1 overflow-y-auto bg-white border border-gray-300 rounded shadow-lg top-full max-h-60">
                     {fromStops.isLoading && (
                       <div className="p-3 text-center">
                         <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
-                        <p className="text-sm text-gray-600 mt-2">
+                        <p className="mt-2 text-sm text-gray-600">
                           정류장 검색 중...
                         </p>
                       </div>
                     )}
 
                     {fromStops.error && (
-                      <div className="p-3 text-center text-red-500 text-sm">
+                      <div className="p-3 text-sm text-center text-red-500">
                         {fromStops.error}
                       </div>
                     )}
 
                     {!fromStops.isLoading && fromStops.busStops.length > 0 && (
                       <div>
-                        <div className="p-2 bg-gray-50 border-b text-xs font-semibold text-gray-700">
+                        <div className="p-2 text-xs font-semibold text-gray-700 border-b bg-gray-50">
                           근처 정류장 ({fromStops.busStops.length}개)
                         </div>
                         {fromStops.busStops.map((stop) => (
@@ -312,12 +310,12 @@ const HomeViewPage = () => {
                               setFrom(stop.nodenm);
                               fromStops.reset();
                             }}
-                            className="w-full p-3 text-left hover:bg-orange-50 border-b last:border-b-0 transition-colors"
+                            className="w-full p-3 text-left transition-colors border-b hover:bg-orange-50 last:border-b-0"
                           >
-                            <div className="font-medium text-sm text-gray-900">
+                            <div className="text-sm font-medium text-gray-900">
                               {stop.nodenm}
                             </div>
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="mt-1 text-xs text-gray-500">
                               정류소ID: {stop.nodeid} | 도시코드:{" "}
                               {stop.citycode}
                             </div>
@@ -328,7 +326,7 @@ const HomeViewPage = () => {
                   </div>
                 )}
             </div>
-            <div className="flex flex-col gap-1 relative">
+            <div className="relative flex flex-col gap-1">
               <label className="text-xs font-semibold text-gray-600">
                 도착지
               </label>
@@ -388,25 +386,25 @@ const HomeViewPage = () => {
                 (toStops.isLoading ||
                   toStops.busStops.length > 0 ||
                   toStops.error) && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-60 overflow-y-auto z-30">
+                  <div className="absolute left-0 right-0 z-30 mt-1 overflow-y-auto bg-white border border-gray-300 rounded shadow-lg top-full max-h-60">
                     {toStops.isLoading && (
                       <div className="p-3 text-center">
                         <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
-                        <p className="text-sm text-gray-600 mt-2">
+                        <p className="mt-2 text-sm text-gray-600">
                           정류장 검색 중...
                         </p>
                       </div>
                     )}
 
                     {toStops.error && (
-                      <div className="p-3 text-center text-red-500 text-sm">
+                      <div className="p-3 text-sm text-center text-red-500">
                         {toStops.error}
                       </div>
                     )}
 
                     {!toStops.isLoading && toStops.busStops.length > 0 && (
                       <div>
-                        <div className="p-2 bg-gray-50 border-b text-xs font-semibold text-gray-700">
+                        <div className="p-2 text-xs font-semibold text-gray-700 border-b bg-gray-50">
                           근처 정류장 ({toStops.busStops.length}개)
                         </div>
                         {toStops.busStops.map((stop) => (
@@ -417,12 +415,12 @@ const HomeViewPage = () => {
                               setTo(stop.nodenm);
                               toStops.reset();
                             }}
-                            className="w-full p-3 text-left hover:bg-orange-50 border-b last:border-b-0 transition-colors"
+                            className="w-full p-3 text-left transition-colors border-b hover:bg-orange-50 last:border-b-0"
                           >
-                            <div className="font-medium text-sm text-gray-900">
+                            <div className="text-sm font-medium text-gray-900">
                               {stop.nodenm}
                             </div>
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="mt-1 text-xs text-gray-500">
                               정류소ID: {stop.nodeid} | 도시코드:{" "}
                               {stop.citycode}
                             </div>
@@ -462,13 +460,15 @@ const HomeViewPage = () => {
           </div>
 
           {estimated && (
-            <div className="mt-4 flex flex-col items-center gap-4 w-full">
-              <div className="w-max mx-auto mt-4 p-3 bg-orange-50 border border-orange-100 rounded text-center sm:text-left">
+            <div className="flex flex-col items-center w-full gap-4 mt-4">
+              <div className="p-3 mx-auto mt-4 text-center border border-orange-100 rounded w-max bg-orange-50 sm:text-left">
                 <span className="font-bold text-orange-800">🚗 결과: </span>
                 <span className="text-gray-800">{estimated}</span>
               </div>
               <button
-                onClick={estimateTime}
+                onClick={() => {
+                  navigate("/subjects");
+                }}
                 className="p-4 py-2 text-sm font-bold text-white bg-orange-500 rounded hover:bg-orange-600 active:bg-orange-700"
               >
                 학습 시작하기
@@ -480,23 +480,22 @@ const HomeViewPage = () => {
 
       <div ref={mapRef} className="w-full h-full bg-gray-100" />
 
-      <div className="absolute right-4 bottom-8 z-10 flex flex-col items-end gap-3">
-
+      <div className="absolute z-10 flex flex-col items-end gap-3 right-4 bottom-8">
         {contextEstimatedTime && (
           <div className="bg-white rounded-2xl shadow-2xl p-4 min-w-[280px] border border-orange-200">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-2xl">🚌</span>
               <span className="font-bold text-gray-800">이동 예상 시간</span>
             </div>
-            <div className="text-center py-4">
+            <div className="py-4 text-center">
               <div className="text-4xl font-bold text-orange-600">
                 {contextEstimatedTime}분
               </div>
-              <div className="text-sm text-gray-500 mt-2">예상 소요시간</div>
+              <div className="mt-2 text-sm text-gray-500">예상 소요시간</div>
             </div>
             {selectedFromStop && selectedToStop && (
-              <div className="mt-3 pt-3 border-t border-gray-200">
-                <div className="text-xs text-gray-500 space-y-1">
+              <div className="pt-3 mt-3 border-t border-gray-200">
+                <div className="space-y-1 text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <span>📍</span>
                     <span className="truncate">{selectedFromStop.nodenm}</span>
@@ -519,26 +518,25 @@ const HomeViewPage = () => {
         </button>
       </div>
 
-
       {!mapLoaded && !mapError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-0">
+        <div className="absolute inset-0 z-0 flex items-center justify-center bg-gray-50">
           <div className="flex flex-col items-center">
-            <div className="w-8 h-8 border-4 border-orange-500 rounded-full border-t-transparent animate-spin mb-2"></div>
+            <div className="w-8 h-8 mb-2 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
             <p className="text-gray-500">지도를 불러오는 중입니다...</p>
           </div>
         </div>
       )}
 
       {mapError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-0 p-4">
+        <div className="absolute inset-0 z-0 flex items-center justify-center p-4 bg-gray-50">
           <div className="text-center text-red-500">
-            <p className="font-bold text-lg">지도를 로드할 수 없습니다.</p>
-            <p className="text-sm mt-2 text-gray-600">
+            <p className="text-lg font-bold">지도를 로드할 수 없습니다.</p>
+            <p className="mt-2 text-sm text-gray-600">
               1. Kakao Developers에서 <b>사이트 도메인</b> 설정을 확인하세요.
               <br />
               (현재 주소: {window.location.origin})
             </p>
-            <p className="text-sm mt-1 text-gray-600">
+            <p className="mt-1 text-sm text-gray-600">
               2. <b>API KEY</b>가 올바른지 확인하세요.
             </p>
           </div>
@@ -549,4 +547,3 @@ const HomeViewPage = () => {
 };
 
 export default HomeViewPage;
-

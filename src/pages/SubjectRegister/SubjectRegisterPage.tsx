@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
+import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../../context/AppContext";
 
 const SubjectRegisterPage = () => {
   const [title, setTitle] = useState("");
@@ -8,6 +10,8 @@ const SubjectRegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { setRegisteredSubject } = useAppContext();
 
   const onCancel = () => {
     setTitle("");
@@ -30,9 +34,15 @@ const SubjectRegisterPage = () => {
         description: description.trim(),
         createdAt: serverTimestamp(),
       });
+      try {
+        setRegisteredSubject(title.trim());
+      } catch (e) {
+        console.log(e)
+      }
       setSuccess("과목이 등록되었습니다.");
       setTitle("");
       setDescription("");
+      navigate("/solve");
     } catch (err: unknown) {
       const msg =
         err instanceof Error
@@ -70,7 +80,7 @@ const SubjectRegisterPage = () => {
           />
 
           <div className="flex items-center">
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-auto">
               <button
                 type="button"
                 onClick={onCancel}
@@ -93,8 +103,8 @@ const SubjectRegisterPage = () => {
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
-          {success && <p className="text-sm text-green-600 mt-2">{success}</p>}
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+          {success && <p className="mt-2 text-sm text-green-600">{success}</p>}
         </div>
       </main>
     </div>
