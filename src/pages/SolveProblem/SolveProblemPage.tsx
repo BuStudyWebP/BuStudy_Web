@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../context/AppContext";
-import useOpenAI from "../../hooks/useOpenAI";
+import useOpenAI from "../../hooks/AI/useOpenAI";
 
 type MCQ = {
   question: string;
@@ -10,8 +10,8 @@ type MCQ = {
 };
 
 const SolveProblemPage = () => {
-  const { registeredSubject } = useAppContext();
-  const { loading, error, generateFiveMCQ } = useOpenAI();
+  const { registeredSubject, estimatedTime } = useAppContext();
+  const { loading, generateFiveMCQ } = useOpenAI();
   const [problems, setProblems] = useState<MCQ[] | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -24,7 +24,10 @@ const SolveProblemPage = () => {
   useEffect(() => {
     const fetchIfSubject = async () => {
       if (!registeredSubject) return;
-      const res = await generateFiveMCQ(registeredSubject);
+      const res = await generateFiveMCQ(
+        registeredSubject,
+        estimatedTime ?? undefined
+      );
       if (res.success && res.data) setProblems(res.data);
     };
     fetchIfSubject();
@@ -32,7 +35,10 @@ const SolveProblemPage = () => {
 
   const handleGenerate = async () => {
     if (!registeredSubject) return;
-    const res = await generateFiveMCQ(registeredSubject);
+    const res = await generateFiveMCQ(
+      registeredSubject,
+      estimatedTime ?? undefined
+    );
     if (res.success && res.data) setProblems(res.data);
     setScore(0);
     setAttempted(0);
@@ -175,6 +181,15 @@ const SolveProblemPage = () => {
               <p className="mt-2 text-sm text-gray-700">
                 총 {attempted}문제 중 {score}문제를 맞추셨습니다.
               </p>
+              <div className="flex gap-2 mt-3">
+                <button
+                  className="px-4 py-2 text-white bg-orange-500 rounded"
+                  onClick={handleGenerate}
+                  disabled={loading || !registeredSubject}
+                >
+                  다시 생성
+                </button>
+              </div>
             </article>
           ) : (
             <></>
