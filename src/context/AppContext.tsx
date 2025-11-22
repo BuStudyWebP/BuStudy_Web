@@ -7,6 +7,8 @@ interface AppContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   registeredSubject: string | null;
   setRegisteredSubject: React.Dispatch<React.SetStateAction<string | null>>;
+  estimatedTime: number | null;
+  setEstimatedTime: (time: number | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -23,6 +25,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     <AppContext.Provider
       value={{ user, setUser, registeredSubject, setRegisteredSubject }}
     >
+  const [estimatedTime, setEstimatedTime] = useState<number | null>(null);
+
+  return (
+    <AppContext.Provider value={{ user, setUser, estimatedTime, setEstimatedTime }}>
       {children}
     </AppContext.Provider>
   );
