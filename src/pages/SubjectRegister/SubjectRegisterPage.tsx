@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
+import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../../context/AppContext";
+import { useTranslation } from "react-i18next";
 
 const SubjectRegisterPage = () => {
   const [title, setTitle] = useState("");
@@ -8,6 +11,9 @@ const SubjectRegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { setRegisteredSubject } = useAppContext();
+  const { t } = useTranslation();
 
   const onCancel = () => {
     setTitle("");
@@ -20,7 +26,7 @@ const SubjectRegisterPage = () => {
     setError(null);
     setSuccess(null);
     if (!title.trim()) {
-      setError("과목명을 입력해주세요.");
+      setError(t("subject.error.noTitle"));
       return;
     }
     setLoading(true);
@@ -30,14 +36,20 @@ const SubjectRegisterPage = () => {
         description: description.trim(),
         createdAt: serverTimestamp(),
       });
-      setSuccess("과목이 등록되었습니다.");
+      try {
+        setRegisteredSubject(title.trim());
+      } catch (e) {
+        console.log(e);
+      }
+      setSuccess(t("subject.success"));
       setTitle("");
       setDescription("");
+      navigate("/solve");
     } catch (err: unknown) {
       const msg =
         err instanceof Error
           ? err.message
-          : String(err) || "등록 중 오류가 발생했습니다.";
+          : String(err) || t("subject.error.register");
       setError(msg);
     } finally {
       setLoading(false);
@@ -47,37 +59,39 @@ const SubjectRegisterPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-3xl p-4 mx-auto sm:p-6 lg:p-8">
-        <h2 className="mb-2 text-2xl font-bold">과목 등록</h2>
-        <p className="mb-4 text-sm text-gray-600">
-          사용자가 공부할 내용을 사전에 등록합니다.
-        </p>
+        <h2 className="mb-2 text-2xl font-bold">{t("subject.title")}</h2>
+        <p className="mb-4 text-sm text-gray-600">{t("subject.subtitle")}</p>
 
         <div className="p-4 space-y-3 bg-white rounded shadow-sm">
-          <label className="text-xs text-gray-600">과목명</label>
+          <label className="text-xs text-gray-600">
+            {t("subject.nameLabel")}
+          </label>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full p-2 border rounded"
-            placeholder="예: 수학, 영어"
+            placeholder={t("subject.namePlaceholder")}
           />
 
-          <label className="text-xs text-gray-600">설명 (선택)</label>
+          <label className="text-xs text-gray-600">
+            {t("subject.descLabel")}
+          </label>
           <input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full p-2 border rounded"
-            placeholder="간단한 설명을 입력하세요"
+            placeholder={t("subject.descPlaceholder")}
           />
 
           <div className="flex items-center">
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-auto">
               <button
                 type="button"
                 onClick={onCancel}
                 className="px-4 py-2 border rounded"
                 disabled={loading}
               >
-                취소
+                {t("subject.cancel")}
               </button>
 
               <button
@@ -88,13 +102,13 @@ const SubjectRegisterPage = () => {
                   loading ? "opacity-60" : ""
                 }`}
               >
-                {loading ? "등록 중..." : "등록"}
+                {loading ? t("subject.registering") : t("subject.register")}
               </button>
             </div>
           </div>
 
-          {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
-          {success && <p className="text-sm text-green-600 mt-2">{success}</p>}
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+          {success && <p className="mt-2 text-sm text-green-600">{success}</p>}
         </div>
       </main>
     </div>
