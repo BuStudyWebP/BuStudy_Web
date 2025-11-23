@@ -207,6 +207,8 @@ const HomeViewPage = () => {
         const distance = formatDistance(result.distance);
         const duration = formatDuration(result.duration);
         setEstimated(`🚌 거리 ${distance} · 예상 소요시간 ${duration}`);
+      } else if (estimatedTime.error) {
+        setEstimated(`오류: ${estimatedTime.error}`);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "알 수 없는 오류";
@@ -434,9 +436,19 @@ const HomeViewPage = () => {
             <div className="flex gap-2 mt-2 sm:mt-0">
               <button
                 onClick={estimateTime}
-                className="px-4 py-2 text-sm font-bold text-white bg-orange-500 rounded hover:bg-orange-600 active:bg-orange-700"
+                disabled={estimatedTime.isLoading}
+                className={`px-4 py-2 text-sm font-bold text-white bg-orange-500 rounded hover:bg-orange-600 active:bg-orange-700 ${
+                  estimatedTime.isLoading ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
-                계산하기
+                {estimatedTime.isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="inline-block w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"></div>
+                    계산 중...
+                  </span>
+                ) : (
+                  "계산하기"
+                )}
               </button>
               <button
                 onClick={() => {
@@ -459,11 +471,29 @@ const HomeViewPage = () => {
             </div>
           </div>
 
+          {/* 에러 메시지 표시 */}
+          {estimatedTime.error && !estimated && (
+            <div className="flex items-center gap-2 p-3 mx-auto mt-4 text-center text-red-500 border border-red-200 rounded bg-red-50">
+              <span className="text-xl">⚠️</span>
+              <span className="text-sm">{estimatedTime.error}</span>
+            </div>
+          )}
+
           {estimated && (
             <div className="flex flex-col items-center w-full gap-4 mt-4">
-              <div className="p-3 mx-auto mt-4 text-center border border-orange-100 rounded w-max bg-orange-50 sm:text-left">
-                <span className="font-bold text-orange-800">🚗 결과: </span>
-                <span className="text-gray-800">{estimated}</span>
+              <div className={`p-3 mx-auto mt-4 text-center border rounded w-max sm:text-left ${
+                estimated.startsWith("오류") 
+                  ? "bg-red-50 border-red-200" 
+                  : "bg-orange-50 border-orange-100"
+              }`}>
+                <span className={`font-bold ${
+                  estimated.startsWith("오류") 
+                    ? "text-red-800" 
+                    : "text-orange-800"
+                }`}>
+                  {estimated.startsWith("오류") ? "⚠️ " : "🚗 결과: "}
+                </span>
+                <span className="text-gray-800">{estimated.replace("오류: ", "")}</span>
               </div>
               <button
                 onClick={() => {
