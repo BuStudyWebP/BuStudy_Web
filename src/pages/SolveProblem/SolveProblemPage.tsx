@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppContext } from "../../context/AppContext";
 import { useOpenAI } from "../../hooks/AI/useOpenAI";
 import { useTranslation } from "react-i18next";
+import useOpenAI from "../../hooks/AI/useOpenAI";
 
 type MCQ = {
   question: string;
@@ -96,6 +97,9 @@ const SolveProblemPage = () => {
               <h3 className="font-semibold">{t("solve.generatingTitle")}</h3>
               <p className="mt-2 text-sm text-gray-700">
                 {t("solve.generatingMsg")}
+              <h3 className="font-semibold">문제 생성 중...</h3>
+              <p className="mt-2 text-sm text-gray-700">
+                잠시만 기다려 주세요. AI가 문제를 생성 중입니다.
               </p>
             </article>
           ) : problems && problems.length > 0 ? (
@@ -108,6 +112,7 @@ const SolveProblemPage = () => {
                       current: currentIndex + 1,
                       total: problems.length,
                     })}
+                    문제 {currentIndex + 1} / {problems.length}
                   </h3>
                   <div className="mt-3">
                     <div className="font-medium text-gray-800">
@@ -153,6 +158,7 @@ const SolveProblemPage = () => {
                         disabled={submitted || selectedIndex === null}
                       >
                         {t("solve.submit")}
+                        제출
                       </button>
 
                       <button
@@ -160,6 +166,7 @@ const SolveProblemPage = () => {
                         onClick={handleNext}
                       >
                         {t("solve.next")}
+                        다음 문제
                       </button>
                     </div>
 
@@ -170,6 +177,10 @@ const SolveProblemPage = () => {
                         ) : (
                           <p className="text-red-600">
                             {t("solve.incorrect", { answer: p.answer })}
+                          <p className="text-green-600">정답입니다 🎉</p>
+                        ) : (
+                          <p className="text-red-600">
+                            오답입니다. 정답: {p.answer}
                           </p>
                         )}
                       </div>
@@ -183,6 +194,9 @@ const SolveProblemPage = () => {
               <h3 className="font-semibold">{t("solve.exampleTitle")}</h3>
               <p className="mt-2 text-sm text-gray-700">
                 {t("solve.summary", { attempted, score })}
+              <h3 className="font-semibold">세션 요약</h3>
+              <p className="mt-2 text-sm text-gray-700">
+                총 {attempted}문제 중 {score}문제를 맞추셨습니다.
               </p>
               <div className="flex gap-2 mt-3">
                 <button
@@ -191,6 +205,7 @@ const SolveProblemPage = () => {
                   disabled={loading || !registeredSubject}
                 >
                   {t("solve.regenerate")}
+                  다시 생성
                 </button>
               </div>
             </article>

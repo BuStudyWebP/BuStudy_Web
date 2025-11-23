@@ -2,8 +2,21 @@ import { useState } from "react";
 
 interface RouteInfo {
   distance: number; 
-  duration: number;
+  duration: number; 
   fare?: number; 
+}
+
+interface KakaoRouteResponse {
+  routes: Array<{
+    summary: {
+      distance: number;
+      duration: number;
+      fare?: {
+        taxi?: number;
+        toll?: number;
+      };
+    };
+  }>;
 }
 
 interface UseEstimatedTimeReturn {
@@ -19,12 +32,13 @@ interface UseEstimatedTimeReturn {
   reset: () => void;
 }
 
+const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
+const KAKAO_MOBILITY_API_URL = "https://apis-navi.kakaomobility.com/v1/directions";
 
 export const useEstimatedTime = (): UseEstimatedTimeReturn => {
   const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
 
   const calculateRoute = async (
     startLat: number,
@@ -37,43 +51,47 @@ export const useEstimatedTime = (): UseEstimatedTimeReturn => {
     setRouteInfo(null);
 
     try {
-      const toRad = (value: number) => (value * Math.PI) / 180;
-      const R = 6371; 
-      const dLat = toRad(endLat - startLat);
-      const dLng = toRad(endLng - startLng);
-      const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(startLat)) *
-          Math.cos(toRad(endLat)) *
-          Math.sin(dLng / 2) *
-          Math.sin(dLng / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const straightDistance = R * c;
+      const origin = `${startLng},${startLat}`;
+      const destination = `${endLng},${endLat}`;
+      
+      const url = `${KAKAO_MOBILITY_API_URL}?origin=${origin}&destination=${destination}`;
 
-      const roadDistance = straightDistance * 1.3;
-      const distanceInMeters = Math.round(roadDistance * 1000);
-
-      const avgSpeed = straightDistance > 10 ? 35 : 20; 
-      const durationInSeconds = Math.round((roadDistance / avgSpeed) * 3600);
-
-      setRouteInfo({
-        distance: distanceInMeters,
-        duration: durationInSeconds,
-        fare: 0,
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `KakaoAK ${KAKAO_REST_API_KEY}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      return {
-        distance: distanceInMeters,
-        duration: durationInSeconds,
-        fare: 0,
+      if (!response.ok) {
+        throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+      }
+
+      const data: KakaoRouteResponse = await response.json();
+
+      if (!data.routes || data.routes.length === 0) {
+        throw new Error("경로를 찾을 수 없습니다.");
+      }
+
+      const summary = data.routes[0].summary;
+      
+      const result: RouteInfo = {
+        distance: summary.distance, 
+        duration: summary.duration, 
+        fare: summary.fare?.taxi || 0,
       };
+
+      setRouteInfo(result);
+      return result;
+
     } catch (err) {
       const errorMessage =
         err instanceof Error
           ? err.message
           : "경로 계산 중 오류가 발생했습니다.";
       setError(errorMessage);
-      console.error("경로 계산 오류:", err);
+      console.error("카카오 모빌리티 API 오류:", err);
       return null;
     } finally {
       setIsLoading(false);
@@ -97,18 +115,14 @@ export const useEstimatedTime = (): UseEstimatedTimeReturn => {
 
 export const formatDuration = (seconds: number): string => {
   const minutes = Math.round(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
 
-  if (minutes >= 60) {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0
-      ? `${hours}시간 ${remainingMinutes}분`
-      : `${hours}시간`;
+  if (hours > 0) {
+    return `${hours}시간 ${remainingMinutes}분`;
   }
-
   return `${minutes}분`;
 };
-
 
 export const formatDistance = (meters: number): string => {
   if (meters >= 1000) {

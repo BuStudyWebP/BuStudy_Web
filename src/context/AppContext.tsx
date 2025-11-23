@@ -5,10 +5,13 @@ type User = any;
 interface AppContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  registeredSubject: string | null;
+  setRegisteredSubject: React.Dispatch<React.SetStateAction<string | null>>;
   estimatedTime: number | null;
   setEstimatedTime: (time: number | null) => void;
   registeredSubject: string | null;
   setRegisteredSubject: (s: string | null) => void;
+  setEstimatedTime: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -17,6 +20,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [registeredSubject, setRegisteredSubject] = useState<string | null>(
+    null
+  );
   const [estimatedTime, setEstimatedTime] = useState<number | null>(null);
   const [registeredSubject, setRegisteredSubject] = useState<string | null>(
     null
@@ -31,6 +37,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         setEstimatedTime,
         registeredSubject,
         setRegisteredSubject,
+        registeredSubject,
+        setRegisteredSubject,
+        estimatedTime,
+        setEstimatedTime,
       }}
     >
       {children}

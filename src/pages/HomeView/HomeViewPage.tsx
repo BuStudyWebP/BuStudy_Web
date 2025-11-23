@@ -214,6 +214,9 @@ const HomeViewPage = () => {
             "home.estimatedSubtitle"
           )} ${duration}`
         );
+        setEstimated(`🚌 거리 ${distance} · 예상 소요시간 ${duration}`);
+      } else if (estimatedTime.error) {
+        setEstimated(`오류: ${estimatedTime.error}`);
       }
     } catch (err) {
       const message =
@@ -294,6 +297,7 @@ const HomeViewPage = () => {
                         <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
                         <p className="mt-2 text-sm text-gray-600">
                           {t("home.searchingStops")}
+                          정류장 검색 중...
                         </p>
                       </div>
                     )}
@@ -302,6 +306,7 @@ const HomeViewPage = () => {
                       <div className="p-3 text-sm text-center text-red-500">
                         {t("home.stopSearchError")}{" "}
                         {fromStops.error ? `(${fromStops.error})` : null}
+                        {fromStops.error}
                       </div>
                     )}
 
@@ -311,6 +316,7 @@ const HomeViewPage = () => {
                           {t("home.nearbyStops", {
                             count: fromStops.busStops.length,
                           })}
+                          근처 정류장 ({fromStops.busStops.length}개)
                         </div>
                         {fromStops.busStops.map((stop) => (
                           <button
@@ -328,6 +334,8 @@ const HomeViewPage = () => {
                             <div className="mt-1 text-xs text-gray-500">
                               {t("home.stopIdLabel")} : {stop.nodeid} |{" "}
                               {t("home.cityCodeLabel")} : {stop.citycode}
+                              정류소ID: {stop.nodeid} | 도시코드:{" "}
+                              {stop.citycode}
                             </div>
                           </button>
                         ))}
@@ -402,6 +410,7 @@ const HomeViewPage = () => {
                         <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
                         <p className="mt-2 text-sm text-gray-600">
                           {t("home.searchingStops")}
+                          정류장 검색 중...
                         </p>
                       </div>
                     )}
@@ -410,6 +419,7 @@ const HomeViewPage = () => {
                       <div className="p-3 text-sm text-center text-red-500">
                         {t("home.stopSearchError")}{" "}
                         {toStops.error ? `(${toStops.error})` : null}
+                        {toStops.error}
                       </div>
                     )}
 
@@ -419,6 +429,7 @@ const HomeViewPage = () => {
                           {t("home.nearbyStops", {
                             count: toStops.busStops.length,
                           })}
+                          근처 정류장 ({toStops.busStops.length}개)
                         </div>
                         {toStops.busStops.map((stop) => (
                           <button
@@ -436,6 +447,8 @@ const HomeViewPage = () => {
                             <div className="mt-1 text-xs text-gray-500">
                               {t("home.stopIdLabel")} : {stop.nodeid} |{" "}
                               {t("home.cityCodeLabel")} : {stop.citycode}
+                              정류소ID: {stop.nodeid} | 도시코드:{" "}
+                              {stop.citycode}
                             </div>
                           </button>
                         ))}
@@ -447,9 +460,20 @@ const HomeViewPage = () => {
             <div className="flex gap-2 mt-2 sm:mt-0">
               <button
                 onClick={estimateTime}
-                className="px-4 py-2 text-sm font-bold text-white bg-orange-500 rounded hover:bg-orange-600 active:bg-orange-700"
+                disabled={estimatedTime.isLoading}
+                className={`px-4 py-2 text-sm font-bold text-white bg-orange-500 rounded hover:bg-orange-600 active:bg-orange-700 ${
+                  estimatedTime.isLoading ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
                 {t("home.calculateButton")}
+                {estimatedTime.isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="inline-block w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"></div>
+                    계산 중...
+                  </span>
+                ) : (
+                  "계산하기"
+                )}
               </button>
               <button
                 onClick={() => {
@@ -472,6 +496,14 @@ const HomeViewPage = () => {
             </div>
           </div>
 
+          {/* 에러 메시지 표시 */}
+          {estimatedTime.error && !estimated && (
+            <div className="flex items-center gap-2 p-3 mx-auto mt-4 text-center text-red-500 border border-red-200 rounded bg-red-50">
+              <span className="text-xl">⚠️</span>
+              <span className="text-sm">{estimatedTime.error}</span>
+            </div>
+          )}
+
           {estimated && (
             <div className="flex flex-col items-center w-full gap-4 mt-4">
               <div className="p-3 mx-auto mt-4 text-center border border-orange-100 rounded w-max bg-orange-50 sm:text-left">
@@ -479,6 +511,19 @@ const HomeViewPage = () => {
                   🚗 {t("home.resultLabel")}{" "}
                 </span>
                 <span className="text-gray-800">{estimated}</span>
+              <div className={`p-3 mx-auto mt-4 text-center border rounded w-max sm:text-left ${
+                estimated.startsWith("오류") 
+                  ? "bg-red-50 border-red-200" 
+                  : "bg-orange-50 border-orange-100"
+              }`}>
+                <span className={`font-bold ${
+                  estimated.startsWith("오류") 
+                    ? "text-red-800" 
+                    : "text-orange-800"
+                }`}>
+                  {estimated.startsWith("오류") ? "⚠️ " : "🚗 결과: "}
+                </span>
+                <span className="text-gray-800">{estimated.replace("오류: ", "")}</span>
               </div>
               <button
                 onClick={() => {
@@ -511,6 +556,7 @@ const HomeViewPage = () => {
               <div className="mt-2 text-sm text-gray-500">
                 {t("home.estimatedSubtitle")}
               </div>
+              <div className="mt-2 text-sm text-gray-500">예상 소요시간</div>
             </div>
             {selectedFromStop && selectedToStop && (
               <div className="pt-3 mt-3 border-t border-gray-200">
@@ -542,6 +588,7 @@ const HomeViewPage = () => {
           <div className="flex flex-col items-center">
             <div className="w-8 h-8 mb-2 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
             <p className="text-gray-500">{t("home.loadingMap")}</p>
+            <p className="text-gray-500">지도를 불러오는 중입니다...</p>
           </div>
         </div>
       )}
@@ -556,6 +603,14 @@ const HomeViewPage = () => {
             </p>
             <p className="mt-1 text-sm text-gray-600">
               {t("home.loadError.step2")}
+            <p className="text-lg font-bold">지도를 로드할 수 없습니다.</p>
+            <p className="mt-2 text-sm text-gray-600">
+              1. Kakao Developers에서 <b>사이트 도메인</b> 설정을 확인하세요.
+              <br />
+              (현재 주소: {window.location.origin})
+            </p>
+            <p className="mt-1 text-sm text-gray-600">
+              2. <b>API KEY</b>가 올바른지 확인하세요.
             </p>
           </div>
         </div>
