@@ -63,6 +63,7 @@
     "correct": "Correct 🎉",
     "incorrect": "Incorrect. Answer: {{answer}}",
     "summary": "You got {{score}} out of {{attempted}} correct.",
+    "summaryTitle": "Session summary",
     "questionCounter": "Question {{current}} / {{total}}"
   },
   "header": {

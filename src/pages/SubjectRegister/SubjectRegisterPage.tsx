@@ -42,9 +42,6 @@ const SubjectRegisterPage = () => {
         console.log(e);
       }
       setSuccess(t("subject.success"));
-        console.log(e)
-      }
-      setSuccess("과목이 등록되었습니다.");
       setTitle("");
       setDescription("");
       navigate("/solve");

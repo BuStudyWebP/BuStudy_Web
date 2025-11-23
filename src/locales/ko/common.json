@@ -62,6 +62,7 @@
     "correct": "정답입니다 🎉",
     "incorrect": "오답입니다. 정답: {{answer}}",
     "summary": "총 {{attempted}}문제 중 {{score}}문제를 맞추셨습니다.",
+    "summaryTitle": "세션 요약",
     "questionCounter": "문제 {{current}} / {{total}}"
   },
   "header": {
