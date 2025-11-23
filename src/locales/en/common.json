@@ -45,9 +45,21 @@
     "register": "Register",
     "registering": "Registering...",
     "success": "Subject registered.",
+    "updated": "Subject updated.",
+    "deleted": "Subject deleted.",
+    "confirmDelete": "Are you sure you want to delete this subject?",
+    "deleting": "Deleting...",
+    "updating": "Updating...",
+    "edit": "Edit",
+    "delete": "Delete",
+    "learn": "Learn",
+    "listTitle": "Registered subjects",
+    "noSubjects": "No registered subjects.",
+    "loadingList": "Loading...",
     "error": {
       "noTitle": "Please enter a subject name.",
-      "register": "An error occurred while registering."
+      "register": "An error occurred while registering.",
+      "delete": "An error occurred while deleting."
     }
   },
   "solve": {

@@ -31,15 +31,14 @@ const HomeViewPage = () => {
   const [selectedFromStop, setSelectedFromStop] = useState<BusStop | null>(
     null
   );
-  const [selectedToStop, setSelectedToStop] = useState<BusStop | null>(
-    null
-  );
+  const [selectedToStop, setSelectedToStop] = useState<BusStop | null>(null);
 
   const fromStops = useBusStop();
   const toStops = useBusStop();
   const estimatedTime = useEstimatedTime();
   const { t } = useTranslation();
-  const { estimatedTime: contextEstimatedTime, setEstimatedTime } = useAppContext();
+  const { estimatedTime: contextEstimatedTime, setEstimatedTime } =
+    useAppContext();
   const mapInstanceRef = useRef<KakaoMap | null>(null);
   const markersRef = useRef<KakaoMarker[]>([]);
   const currentLocationMarkerRef = useRef<KakaoMarker | null>(null);
@@ -182,8 +181,8 @@ const HomeViewPage = () => {
       const fromLatLng = new window.kakao.maps.LatLng(fromLat, fromLng);
       const toLatLng = new window.kakao.maps.LatLng(toLat, toLng);
 
-  addMarker(fromLatLng, t("home.fromPrefix") + selectedFromStop.nodenm);
-  addMarker(toLatLng, t("home.toPrefix") + selectedToStop.nodenm);
+      addMarker(fromLatLng, t("home.fromPrefix") + selectedFromStop.nodenm);
+      addMarker(toLatLng, t("home.toPrefix") + selectedToStop.nodenm);
 
       const bounds = new window.kakao.maps.LatLngBounds();
       bounds.extend(fromLatLng);
@@ -203,19 +202,24 @@ const HomeViewPage = () => {
         setEstimatedTime(timeInMinutes);
         const distance = formatDistance(result.distance);
         const duration = formatDuration(result.duration);
-        setEstimated(`${t("home.resultLabel")} ${distance} · ${t("home.estimatedSubtitle")} ${duration}`);
+        setEstimated(
+          `${t("home.resultLabel")} ${distance} · ${t(
+            "home.estimatedSubtitle"
+          )} ${duration}`
+        );
       } else if (estimatedTime.error) {
         setEstimated(`${t("home.errorLabel")} ${estimatedTime.error}`);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : t("home.unknownError");
+      const message =
+        err instanceof Error ? err.message : t("home.unknownError");
       setEstimated(`${t("home.errorLabel")} ${message}`);
     }
   }
 
   return (
     <div className="relative w-full" style={{ height: "calc(100vh - 64px)" }}>
-  {/* top panel */}
+      {/* top panel */}
       {showPanel && (
         <div className="absolute top-0 left-0 right-0 z-20 p-4 transition-all shadow-md bg-white/95 backdrop-blur">
           <div className="grid items-end max-w-5xl grid-cols-1 gap-3 mx-auto sm:grid-cols-[1fr_1fr_auto]">
@@ -284,20 +288,25 @@ const HomeViewPage = () => {
                     {fromStops.isLoading && (
                       <div className="p-3 text-center">
                         <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
-                        <p className="mt-2 text-sm text-gray-600">{t("home.searchingStops")}</p>
+                        <p className="mt-2 text-sm text-gray-600">
+                          {t("home.searchingStops")}
+                        </p>
                       </div>
                     )}
 
                     {fromStops.error && (
                       <div className="p-3 text-sm text-center text-red-500">
-                        {t("stopSearchError")} {fromStops.error ? `(${fromStops.error})` : null}
+                        {t("stopSearchError")}{" "}
+                        {fromStops.error ? `(${fromStops.error})` : null}
                       </div>
                     )}
 
                     {!fromStops.isLoading && fromStops.busStops.length > 0 && (
                       <div>
                         <div className="p-2 text-xs font-semibold text-gray-700 border-b bg-gray-50">
-                          {t("home.nearbyStops", { count: fromStops.busStops.length })}
+                          {t("home.nearbyStops", {
+                            count: fromStops.busStops.length,
+                          })}
                         </div>
                         {fromStops.busStops.map((stop) => (
                           <button
@@ -313,7 +322,8 @@ const HomeViewPage = () => {
                               {stop.nodenm}
                             </div>
                             <div className="mt-1 text-xs text-gray-500">
-                              {t("home.stopIdLabel")} : {stop.nodeid} | {t("home.cityCodeLabel")} : {stop.citycode}
+                              {t("home.stopIdLabel")} : {stop.nodeid} |{" "}
+                              {t("home.cityCodeLabel")} : {stop.citycode}
                             </div>
                           </button>
                         ))}
@@ -386,20 +396,25 @@ const HomeViewPage = () => {
                     {toStops.isLoading && (
                       <div className="p-3 text-center">
                         <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
-                        <p className="mt-2 text-sm text-gray-600">{t("home.searchingStops")}</p>
+                        <p className="mt-2 text-sm text-gray-600">
+                          {t("home.searchingStops")}
+                        </p>
                       </div>
                     )}
 
                     {toStops.error && (
                       <div className="p-3 text-sm text-center text-red-500">
-                        {t("stopSearchError")} {toStops.error ? `(${toStops.error})` : null}
+                        {t("stopSearchError")}{" "}
+                        {toStops.error ? `(${toStops.error})` : null}
                       </div>
                     )}
 
                     {!toStops.isLoading && toStops.busStops.length > 0 && (
                       <div>
                         <div className="p-2 text-xs font-semibold text-gray-700 border-b bg-gray-50">
-                          {t("home.nearbyStops", { count: toStops.busStops.length })}
+                          {t("home.nearbyStops", {
+                            count: toStops.busStops.length,
+                          })}
                         </div>
                         {toStops.busStops.map((stop) => (
                           <button
@@ -415,7 +430,8 @@ const HomeViewPage = () => {
                               {stop.nodenm}
                             </div>
                             <div className="mt-1 text-xs text-gray-500">
-                              {t("home.stopIdLabel")} : {stop.nodeid} | {t("home.cityCodeLabel")} : {stop.citycode}
+                              {t("home.stopIdLabel")} : {stop.nodeid} |{" "}
+                              {t("home.cityCodeLabel")} : {stop.citycode}
                             </div>
                           </button>
                         ))}
@@ -486,7 +502,9 @@ const HomeViewPage = () => {
                       : "text-orange-800"
                   }`}
                 >
-                  {estimated.startsWith(t("home.errorLabel")) ? `⚠️ ${t("home.errorLabel")}` : `🚗 ${t("home.resultLabel")}`}
+                  {estimated.startsWith(t("home.errorLabel"))
+                    ? `⚠️ ${t("home.errorLabel")}`
+                    : `🚗 ${t("home.resultLabel")}`}
                 </span>
                 <span className="text-gray-800">
                   {estimated.replace(t("home.errorLabel"), "")}
@@ -512,13 +530,17 @@ const HomeViewPage = () => {
           <div className="bg-white rounded-2xl shadow-2xl p-4 min-w-[280px] border border-orange-200">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-2xl">🚌</span>
-              <span className="font-bold text-gray-800">{t("home.estimatedTitle")}</span>
+              <span className="font-bold text-gray-800">
+                {t("home.estimatedTitle")}
+              </span>
             </div>
             <div className="py-4 text-center">
               <div className="text-4xl font-bold text-orange-600">
                 {t("estimatedMinutes", { minutes: contextEstimatedTime })}
               </div>
-              <div className="mt-2 text-sm text-gray-500">{t("home.estimatedSubtitle")}</div>
+              <div className="mt-2 text-sm text-gray-500">
+                {t("home.estimatedSubtitle")}
+              </div>
             </div>
             {selectedFromStop && selectedToStop && (
               <div className="pt-3 mt-3 border-t border-gray-200">
@@ -559,10 +581,11 @@ const HomeViewPage = () => {
           <div className="text-center text-red-500">
             <p className="text-lg font-bold">{t("home.loadError.title")}</p>
             <p className="mt-2 text-sm text-gray-600">
-              {t("home.loadError.step1")} <br />
-              ({window.location.origin})
+              {t("home.loadError.step1")} <br />({window.location.origin})
             </p>
-            <p className="mt-1 text-sm text-gray-600">{t("home.loadError.step2")}</p>
+            <p className="mt-1 text-sm text-gray-600">
+              {t("home.loadError.step2")}
+            </p>
           </div>
         </div>
       )}

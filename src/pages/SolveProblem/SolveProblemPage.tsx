@@ -94,7 +94,9 @@ const SolveProblemPage = () => {
           {loading ? (
             <article className="p-4 bg-white rounded shadow-sm">
               <h3 className="font-semibold">{t("solve.generatingTitle")}</h3>
-              <p className="mt-2 text-sm text-gray-700">{t("solve.generatingMsg")}</p>
+              <p className="mt-2 text-sm text-gray-700">
+                {t("solve.generatingMsg")}
+              </p>
             </article>
           ) : problems && problems.length > 0 ? (
             (() => {
@@ -102,7 +104,10 @@ const SolveProblemPage = () => {
               return (
                 <article className="p-4 bg-white rounded shadow-sm">
                   <h3 className="font-semibold">
-                    {t("solve.questionCounter", { current: currentIndex + 1, total: problems.length })}
+                    {t("solve.questionCounter", {
+                      current: currentIndex + 1,
+                      total: problems.length,
+                    })}
                   </h3>
                   <div className="mt-3">
                     <div className="font-medium text-gray-800">
@@ -150,7 +155,10 @@ const SolveProblemPage = () => {
                         {t("solve.submit")}
                       </button>
 
-                      <button className="px-4 py-2 border rounded" onClick={handleNext}>
+                      <button
+                        className="px-4 py-2 border rounded"
+                        onClick={handleNext}
+                      >
                         {t("solve.next")}
                       </button>
                     </div>
@@ -160,7 +168,9 @@ const SolveProblemPage = () => {
                         {isCorrect ? (
                           <p className="text-green-600">{t("solve.correct")}</p>
                         ) : (
-                          <p className="text-red-600">{t("solve.incorrect", { answer: p.answer })}</p>
+                          <p className="text-red-600">
+                            {t("solve.incorrect", { answer: p.answer })}
+                          </p>
                         )}
                       </div>
                     )}
@@ -171,7 +181,9 @@ const SolveProblemPage = () => {
           ) : showSummary ? (
             <article className="p-4 bg-white rounded shadow-sm">
               <h3 className="font-semibold">{t("solve.summaryTitle")}</h3>
-              <p className="mt-2 text-sm text-gray-700">{t("solve.summary", { attempted, score })}</p>
+              <p className="mt-2 text-sm text-gray-700">
+                {t("solve.summary", { attempted, score })}
+              </p>
               <div className="flex gap-2 mt-3">
                 <button
                   className="px-4 py-2 text-white bg-orange-500 rounded"

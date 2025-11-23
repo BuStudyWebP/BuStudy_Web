@@ -44,9 +44,21 @@
     "register": "등록",
     "registering": "등록 중...",
     "success": "과목이 등록되었습니다.",
+    "updated": "과목이 수정되었습니다.",
+    "deleted": "과목이 삭제되었습니다.",
+    "confirmDelete": "정말로 이 과목을 삭제하시겠습니까?",
+    "deleting": "삭제 중...",
+    "updating": "수정 중...",
+    "edit": "수정",
+    "delete": "삭제",
+    "learn": "학습",
+    "listTitle": "등록된 과목 목록",
+    "noSubjects": "등록된 과목이 없습니다.",
+    "loadingList": "로딩 중...",
     "error": {
       "noTitle": "과목명을 입력해주세요.",
-      "register": "등록 중 오류가 발생했습니다."
+      "register": "등록 중 오류가 발생했습니다.",
+      "delete": "삭제 중 오류가 발생했습니다."
     }
   },
   "solve": {
