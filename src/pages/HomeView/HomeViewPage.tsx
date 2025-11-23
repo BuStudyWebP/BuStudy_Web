@@ -7,6 +7,7 @@ import {
   formatDistance,
 } from "../../hooks/Home/getEstimatedTime";
 import { useAppContext } from "../../context/AppContext";
+import { useTranslation } from "react-i18next";
 
 type KakaoMap = {
   setBounds: (bounds: unknown) => void;
@@ -34,20 +35,16 @@ const HomeViewPage = () => {
 
   const fromStops = useBusStop();
   const toStops = useBusStop();
-
   const estimatedTime = useEstimatedTime();
-
+  const { t } = useTranslation();
   const { estimatedTime: contextEstimatedTime, setEstimatedTime } =
     useAppContext();
-
-  const navigate = useNavigate();
-
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState(false);
-
   const mapInstanceRef = useRef<KakaoMap | null>(null);
   const markersRef = useRef<KakaoMarker[]>([]);
   const currentLocationMarkerRef = useRef<KakaoMarker | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (mapInstanceRef.current || !mapRef.current) return;
@@ -93,7 +90,7 @@ const HomeViewPage = () => {
               currentLocationMarkerRef.current = marker;
             },
             (error) => {
-              console.warn("위치 정보를 가져올 수 없습니다:", error);
+              console.warn("Unable to access location information:", error);
             },
             {
               enableHighAccuracy: true,
@@ -169,7 +166,7 @@ const HomeViewPage = () => {
     if (!window.kakao || !mapInstanceRef.current) return;
 
     if (!selectedFromStop || !selectedToStop) {
-      alert("출발 정류장과 도착 정류장을 선택해주세요.");
+      alert(t("home.selectStopsAlert"));
       return;
     }
 
@@ -184,8 +181,8 @@ const HomeViewPage = () => {
       const fromLatLng = new window.kakao.maps.LatLng(fromLat, fromLng);
       const toLatLng = new window.kakao.maps.LatLng(toLat, toLng);
 
-      addMarker(fromLatLng, "출발: " + selectedFromStop.nodenm);
-      addMarker(toLatLng, "도착: " + selectedToStop.nodenm);
+      addMarker(fromLatLng, t("home.fromPrefix") + selectedFromStop.nodenm);
+      addMarker(toLatLng, t("home.toPrefix") + selectedToStop.nodenm);
 
       const bounds = new window.kakao.maps.LatLngBounds();
       bounds.extend(fromLatLng);
@@ -200,31 +197,35 @@ const HomeViewPage = () => {
       );
 
       if (result) {
-        // 소요 시간(분)만 Context에 저장
+        // store only travel time (minutes) in Context
         const timeInMinutes = Math.round(result.duration / 60);
         setEstimatedTime(timeInMinutes);
-
         const distance = formatDistance(result.distance);
         const duration = formatDuration(result.duration);
-        setEstimated(`🚌 거리 ${distance} · 예상 소요시간 ${duration}`);
+        setEstimated(
+          `${t("home.resultLabel")} ${distance} · ${t(
+            "home.estimatedSubtitle"
+          )} ${duration}`
+        );
       } else if (estimatedTime.error) {
-        setEstimated(`오류: ${estimatedTime.error}`);
+        setEstimated(`${t("home.errorLabel")} ${estimatedTime.error}`);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "알 수 없는 오류";
-      setEstimated(`오류: ${message}`);
+      const message =
+        err instanceof Error ? err.message : t("home.unknownError");
+      setEstimated(`${t("home.errorLabel")} ${message}`);
     }
   }
 
   return (
     <div className="relative w-full" style={{ height: "calc(100vh - 64px)" }}>
-      {/* 상단 패널 */}
+      {/* top panel */}
       {showPanel && (
         <div className="absolute top-0 left-0 right-0 z-20 p-4 transition-all shadow-md bg-white/95 backdrop-blur">
           <div className="grid items-end max-w-5xl grid-cols-1 gap-3 mx-auto sm:grid-cols-[1fr_1fr_auto]">
             <div className="relative flex flex-col gap-1">
               <label className="text-xs font-semibold text-gray-600">
-                출발지
+                {t("home.fromLabel")}
               </label>
               <input
                 value={from}
@@ -250,7 +251,7 @@ const HomeViewPage = () => {
                           const lng = Number(result[0].x);
                           fromStops.searchNearbyStops(lat, lng);
                         } else {
-                          // 키워드 검색 실패 시 주소 검색 시도
+                          // If keyword search fails, try address search
                           const geocoder =
                             new window.kakao.maps.services.Geocoder();
                           geocoder.addressSearch(
@@ -276,7 +277,7 @@ const HomeViewPage = () => {
                   }
                 }}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-orange-500"
-                placeholder="예: 강남역 (Enter로 정류장 검색)"
+                placeholder={t("home.fromPlaceholder")}
               />
 
               {from &&
@@ -288,21 +289,24 @@ const HomeViewPage = () => {
                       <div className="p-3 text-center">
                         <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
                         <p className="mt-2 text-sm text-gray-600">
-                          정류장 검색 중...
+                          {t("home.searchingStops")}
                         </p>
                       </div>
                     )}
 
                     {fromStops.error && (
                       <div className="p-3 text-sm text-center text-red-500">
-                        {fromStops.error}
+                        {t("stopSearchError")}{" "}
+                        {fromStops.error ? `(${fromStops.error})` : null}
                       </div>
                     )}
 
                     {!fromStops.isLoading && fromStops.busStops.length > 0 && (
                       <div>
                         <div className="p-2 text-xs font-semibold text-gray-700 border-b bg-gray-50">
-                          근처 정류장 ({fromStops.busStops.length}개)
+                          {t("home.nearbyStops", {
+                            count: fromStops.busStops.length,
+                          })}
                         </div>
                         {fromStops.busStops.map((stop) => (
                           <button
@@ -318,8 +322,8 @@ const HomeViewPage = () => {
                               {stop.nodenm}
                             </div>
                             <div className="mt-1 text-xs text-gray-500">
-                              정류소ID: {stop.nodeid} | 도시코드:{" "}
-                              {stop.citycode}
+                              {t("home.stopIdLabel")} : {stop.nodeid} |{" "}
+                              {t("home.cityCodeLabel")} : {stop.citycode}
                             </div>
                           </button>
                         ))}
@@ -330,7 +334,7 @@ const HomeViewPage = () => {
             </div>
             <div className="relative flex flex-col gap-1">
               <label className="text-xs font-semibold text-gray-600">
-                도착지
+                {t("home.toLabel")}
               </label>
               <input
                 value={to}
@@ -381,7 +385,7 @@ const HomeViewPage = () => {
                   }
                 }}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-orange-500"
-                placeholder="예: 판교역 (Enter로 정류장 검색)"
+                placeholder={t("home.toPlaceholder")}
               />
 
               {to &&
@@ -393,21 +397,24 @@ const HomeViewPage = () => {
                       <div className="p-3 text-center">
                         <div className="inline-block w-4 h-4 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
                         <p className="mt-2 text-sm text-gray-600">
-                          정류장 검색 중...
+                          {t("home.searchingStops")}
                         </p>
                       </div>
                     )}
 
                     {toStops.error && (
                       <div className="p-3 text-sm text-center text-red-500">
-                        {toStops.error}
+                        {t("stopSearchError")}{" "}
+                        {toStops.error ? `(${toStops.error})` : null}
                       </div>
                     )}
 
                     {!toStops.isLoading && toStops.busStops.length > 0 && (
                       <div>
                         <div className="p-2 text-xs font-semibold text-gray-700 border-b bg-gray-50">
-                          근처 정류장 ({toStops.busStops.length}개)
+                          {t("home.nearbyStops", {
+                            count: toStops.busStops.length,
+                          })}
                         </div>
                         {toStops.busStops.map((stop) => (
                           <button
@@ -423,8 +430,8 @@ const HomeViewPage = () => {
                               {stop.nodenm}
                             </div>
                             <div className="mt-1 text-xs text-gray-500">
-                              정류소ID: {stop.nodeid} | 도시코드:{" "}
-                              {stop.citycode}
+                              {t("home.stopIdLabel")} : {stop.nodeid} |{" "}
+                              {t("home.cityCodeLabel")} : {stop.citycode}
                             </div>
                           </button>
                         ))}
@@ -444,10 +451,10 @@ const HomeViewPage = () => {
                 {estimatedTime.isLoading ? (
                   <span className="flex items-center gap-2">
                     <div className="inline-block w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"></div>
-                    계산 중...
+                    {t("home.calculating")}
                   </span>
                 ) : (
-                  "계산하기"
+                  t("home.calculateButton")
                 )}
               </button>
               <button
@@ -466,12 +473,12 @@ const HomeViewPage = () => {
                 }}
                 className="px-4 py-2 text-sm text-gray-600 bg-gray-100 border rounded hover:bg-gray-200"
               >
-                닫기
+                {t("home.closeButton")}
               </button>
             </div>
           </div>
 
-          {/* 에러 메시지 표시 */}
+          {/* show error message */}
           {estimatedTime.error && !estimated && (
             <div className="flex items-center gap-2 p-3 mx-auto mt-4 text-center text-red-500 border border-red-200 rounded bg-red-50">
               <span className="text-xl">⚠️</span>
@@ -481,19 +488,27 @@ const HomeViewPage = () => {
 
           {estimated && (
             <div className="flex flex-col items-center w-full gap-4 mt-4">
-              <div className={`p-3 mx-auto mt-4 text-center border rounded w-max sm:text-left ${
-                estimated.startsWith("오류") 
-                  ? "bg-red-50 border-red-200" 
-                  : "bg-orange-50 border-orange-100"
-              }`}>
-                <span className={`font-bold ${
-                  estimated.startsWith("오류") 
-                    ? "text-red-800" 
-                    : "text-orange-800"
-                }`}>
-                  {estimated.startsWith("오류") ? "⚠️ " : "🚗 결과: "}
+              <div
+                className={`p-3 mx-auto mt-4 text-center border rounded w-max sm:text-left ${
+                  estimated.startsWith(t("home.errorLabel"))
+                    ? "bg-red-50 border-red-200"
+                    : "bg-orange-50 border-orange-100"
+                }`}
+              >
+                <span
+                  className={`font-bold ${
+                    estimated.startsWith(t("home.errorLabel"))
+                      ? "text-red-800"
+                      : "text-orange-800"
+                  }`}
+                >
+                  {estimated.startsWith(t("home.errorLabel"))
+                    ? `⚠️ ${t("home.errorLabel")}`
+                    : `🚗 ${t("home.resultLabel")}`}
                 </span>
-                <span className="text-gray-800">{estimated.replace("오류: ", "")}</span>
+                <span className="text-gray-800">
+                  {estimated.replace(t("home.errorLabel"), "")}
+                </span>
               </div>
               <button
                 onClick={() => {
@@ -501,7 +516,7 @@ const HomeViewPage = () => {
                 }}
                 className="p-4 py-2 text-sm font-bold text-white bg-orange-500 rounded hover:bg-orange-600 active:bg-orange-700"
               >
-                학습 시작하기
+                {t("home.startLearningButton")}
               </button>
             </div>
           )}
@@ -515,13 +530,17 @@ const HomeViewPage = () => {
           <div className="bg-white rounded-2xl shadow-2xl p-4 min-w-[280px] border border-orange-200">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-2xl">🚌</span>
-              <span className="font-bold text-gray-800">이동 예상 시간</span>
+              <span className="font-bold text-gray-800">
+                {t("home.estimatedTitle")}
+              </span>
             </div>
             <div className="py-4 text-center">
               <div className="text-4xl font-bold text-orange-600">
-                {contextEstimatedTime}분
+                {t("estimatedMinutes", { minutes: contextEstimatedTime })}
               </div>
-              <div className="mt-2 text-sm text-gray-500">예상 소요시간</div>
+              <div className="mt-2 text-sm text-gray-500">
+                {t("home.estimatedSubtitle")}
+              </div>
             </div>
             {selectedFromStop && selectedToStop && (
               <div className="pt-3 mt-3 border-t border-gray-200">
@@ -544,7 +563,7 @@ const HomeViewPage = () => {
           onClick={() => setShowPanel((s) => !s)}
           className="flex items-center justify-center px-6 py-3 font-bold text-white transition-transform bg-orange-500 rounded-full shadow-xl hover:bg-orange-600 hover:scale-105 active:scale-95"
         >
-          {showPanel ? "패널 숨기기" : "경로 설정하기"}
+          {showPanel ? t("home.panel.hide") : t("home.panel.open")}
         </button>
       </div>
 
@@ -552,7 +571,7 @@ const HomeViewPage = () => {
         <div className="absolute inset-0 z-0 flex items-center justify-center bg-gray-50">
           <div className="flex flex-col items-center">
             <div className="w-8 h-8 mb-2 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
-            <p className="text-gray-500">지도를 불러오는 중입니다...</p>
+            <p className="text-gray-500">{t("home.loadingMap")}</p>
           </div>
         </div>
       )}
@@ -560,14 +579,12 @@ const HomeViewPage = () => {
       {mapError && (
         <div className="absolute inset-0 z-0 flex items-center justify-center p-4 bg-gray-50">
           <div className="text-center text-red-500">
-            <p className="text-lg font-bold">지도를 로드할 수 없습니다.</p>
+            <p className="text-lg font-bold">{t("home.loadError.title")}</p>
             <p className="mt-2 text-sm text-gray-600">
-              1. Kakao Developers에서 <b>사이트 도메인</b> 설정을 확인하세요.
-              <br />
-              (현재 주소: {window.location.origin})
+              {t("home.loadError.step1")} <br />({window.location.origin})
             </p>
             <p className="mt-1 text-sm text-gray-600">
-              2. <b>API KEY</b>가 올바른지 확인하세요.
+              {t("home.loadError.step2")}
             </p>
           </div>
         </div>

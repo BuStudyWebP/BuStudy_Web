@@ -1,9 +1,11 @@
 import { useState } from "react";
 import Logo from "../../assets/logo/BuStudy.svg";
-
+import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <header className="relative z-20 w-full bg-white shadow-sm">
@@ -18,7 +20,7 @@ const Header = () => {
 
           <div className="sm:hidden">
             <button
-              aria-label="메뉴 열기"
+              aria-label={t("header.openMenu")}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((s) => !s)}
               className="inline-flex items-center justify-center p-2 text-gray-700 rounded-md hover:bg-gray-100"
@@ -47,6 +49,9 @@ const Header = () => {
                 )}
               </svg>
             </button>
+          </div>
+          <div className="hidden gap-3 sm:flex">
+            <LanguageSwitcher />
           </div>
         </div>
       </div>

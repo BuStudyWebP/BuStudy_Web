@@ -1,0 +1,88 @@
+{
+  "home": {
+    "selectStopsAlert": "Please select an origin and destination stop.",
+    "startLearningButton": "Start learning",
+    "calculateButton": "Calculate",
+    "closeButton": "Close",
+    "panel": {
+      "hide": "Hide panel",
+      "open": "Set route"
+    },
+    "loadingMap": "Loading map...",
+    "loadError": {
+      "title": "Unable to load the map.",
+      "step1": "1. Check the site domain settings in Kakao Developers.",
+      "step2": "2. Verify that your API KEY is correct."
+    },
+    "fromLabel": "From",
+    "toLabel": "To",
+    "fromPrefix": "From: ",
+    "toPrefix": "To: ",
+    "fromPlaceholder": "e.g. Gangnam Station (press Enter to search stops)",
+    "toPlaceholder": "e.g. Pangyo Station (press Enter to search stops)",
+    "searchingStops": "Searching stops...",
+    "nearbyStops": "Nearby stops ({{count}})",
+    "estimatedTitle": "Estimated travel time",
+    "estimatedSubtitle": "Estimated duration",
+    "estimatedMinutes": "{{minutes}} min",
+    "resultLabel": "Result:",
+    "stopIdLabel": "Stop ID",
+    "cityCodeLabel": "City code",
+    "unknownError": "Unknown error",
+    "errorLabel": "Error: "
+  },
+  "stopSearchError": "Failed to search stops.",
+  "minuteUnit": " min",
+  "estimatedMinutes": "{{minutes}} min",
+  "subject": {
+    "title": "Register subject",
+    "subtitle": "Register what the user will study in advance.",
+    "nameLabel": "Subject name",
+    "namePlaceholder": "e.g. Math, English",
+    "descLabel": "Description (optional)",
+    "descPlaceholder": "Enter a short description",
+    "cancel": "Cancel",
+    "register": "Register",
+    "registering": "Registering...",
+    "success": "Subject registered.",
+    "updated": "Subject updated.",
+    "deleted": "Subject deleted.",
+    "confirmDelete": "Are you sure you want to delete this subject?",
+    "deleting": "Deleting...",
+    "updating": "Updating...",
+    "edit": "Edit",
+    "delete": "Delete",
+    "learn": "Learn",
+    "listTitle": "Registered subjects",
+    "noSubjects": "No registered subjects.",
+    "loadingList": "Loading...",
+    "error": {
+      "noTitle": "Please enter a subject name.",
+      "register": "An error occurred while registering.",
+      "delete": "An error occurred while deleting."
+    }
+  },
+  "solve": {
+    "title": "Solve problems",
+    "subtitle": "Solve generated problems and check answers/explanations.",
+    "exampleTitle": "Sample problem",
+    "placeholder": "Problem content will appear here.",
+    "submit": "Submit",
+    "next": "Next problem",
+    "generatingTitle": "Generating problems...",
+    "generatingMsg": "Please wait a moment. AI is creating problems.",
+    "regenerate": "Regenerate",
+    "correct": "Correct 🎉",
+    "incorrect": "Incorrect. Answer: {{answer}}",
+    "summary": "You got {{score}} out of {{attempted}} correct.",
+    "summaryTitle": "Session summary",
+    "questionCounter": "Question {{current}} / {{total}}"
+  },
+  "header": {
+    "openMenu": "Open menu",
+    "language": "Language"
+  },
+  "app": {
+    "notFound": "Page not found (404)"
+  }
+}

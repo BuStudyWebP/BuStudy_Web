@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../../context/AppContext";
 import useOpenAI from "../../hooks/AI/useOpenAI";
+import { useTranslation } from "react-i18next";
 
 type MCQ = {
   question: string;
@@ -12,6 +13,7 @@ type MCQ = {
 const SolveProblemPage = () => {
   const { registeredSubject, estimatedTime } = useAppContext();
   const { loading, generateFiveMCQ } = useOpenAI();
+  const { t } = useTranslation();
   const [problems, setProblems] = useState<MCQ[] | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -85,17 +87,15 @@ const SolveProblemPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-4xl p-4 mx-auto sm:p-6 lg:p-8">
-        <h2 className="mb-2 text-2xl font-bold">문제 풀기</h2>
-        <p className="mb-4 text-sm text-gray-600">
-          생성된 문제를 풀고 정답/해설을 확인하세요.
-        </p>
+        <h2 className="mb-2 text-2xl font-bold">{t("solve.title")}</h2>
+        <p className="mb-4 text-sm text-gray-600">{t("solve.subtitle")}</p>
 
         <div className="space-y-4">
           {loading ? (
             <article className="p-4 bg-white rounded shadow-sm">
-              <h3 className="font-semibold">문제 생성 중...</h3>
+              <h3 className="font-semibold">{t("solve.generatingTitle")}</h3>
               <p className="mt-2 text-sm text-gray-700">
-                잠시만 기다려 주세요. AI가 문제를 생성 중입니다.
+                {t("solve.generatingMsg")}
               </p>
             </article>
           ) : problems && problems.length > 0 ? (
@@ -104,7 +104,10 @@ const SolveProblemPage = () => {
               return (
                 <article className="p-4 bg-white rounded shadow-sm">
                   <h3 className="font-semibold">
-                    문제 {currentIndex + 1} / {problems.length}
+                    {t("solve.questionCounter", {
+                      current: currentIndex + 1,
+                      total: problems.length,
+                    })}
                   </h3>
                   <div className="mt-3">
                     <div className="font-medium text-gray-800">
@@ -149,24 +152,24 @@ const SolveProblemPage = () => {
                         onClick={handleSubmitAnswer}
                         disabled={submitted || selectedIndex === null}
                       >
-                        제출
+                        {t("solve.submit")}
                       </button>
 
                       <button
                         className="px-4 py-2 border rounded"
                         onClick={handleNext}
                       >
-                        다음 문제
+                        {t("solve.next")}
                       </button>
                     </div>
 
                     {submitted && (
                       <div className="p-3 mt-3 border rounded bg-gray-50">
                         {isCorrect ? (
-                          <p className="text-green-600">정답입니다 🎉</p>
+                          <p className="text-green-600">{t("solve.correct")}</p>
                         ) : (
                           <p className="text-red-600">
-                            오답입니다. 정답: {p.answer}
+                            {t("solve.incorrect", { answer: p.answer })}
                           </p>
                         )}
                       </div>
@@ -177,9 +180,9 @@ const SolveProblemPage = () => {
             })()
           ) : showSummary ? (
             <article className="p-4 bg-white rounded shadow-sm">
-              <h3 className="font-semibold">세션 요약</h3>
+              <h3 className="font-semibold">{t("solve.summaryTitle")}</h3>
               <p className="mt-2 text-sm text-gray-700">
-                총 {attempted}문제 중 {score}문제를 맞추셨습니다.
+                {t("solve.summary", { attempted, score })}
               </p>
               <div className="flex gap-2 mt-3">
                 <button
@@ -187,7 +190,7 @@ const SolveProblemPage = () => {
                   onClick={handleGenerate}
                   disabled={loading || !registeredSubject}
                 >
-                  다시 생성
+                  {t("solve.regenerate")}
                 </button>
               </div>
             </article>
