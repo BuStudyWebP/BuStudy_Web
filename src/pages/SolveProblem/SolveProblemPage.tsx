@@ -30,21 +30,32 @@ const SolveProblemPage = () => {
         registeredSubject,
         estimatedTime ?? undefined
       );
-      if (res.success && res.data) setProblems(res.data);
+      if (res.success && res.data) {
+        setProblems(res.data);
+      }
     };
     fetchIfSubject();
-  }, [registeredSubject, generateFiveMCQ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registeredSubject, estimatedTime]);
 
   const handleGenerate = async () => {
     if (!registeredSubject) return;
+    setProblems(null);
+    setCurrentIndex(0);
+    setSelectedIndex(null);
+    setSubmitted(false);
+    setIsCorrect(null);
+    setScore(0);
+    setAttempted(0);
+    setShowSummary(false);
+    
     const res = await generateFiveMCQ(
       registeredSubject,
       estimatedTime ?? undefined
     );
-    if (res.success && res.data) setProblems(res.data);
-    setScore(0);
-    setAttempted(0);
-    setShowSummary(false);
+    if (res.success && res.data) {
+      setProblems(res.data);
+    }
   };
 
   const handleSelect = (i: number) => {
@@ -194,8 +205,28 @@ const SolveProblemPage = () => {
                 </button>
               </div>
             </article>
+          ) : !registeredSubject ? (
+            <article className="p-4 bg-white rounded shadow-sm">
+              <h3 className="font-semibold">과목을 먼저 등록해주세요</h3>
+              <p className="mt-2 text-sm text-gray-700">
+                문제를 생성하려면 과목을 먼저 등록해야 합니다.
+              </p>
+              <div className="mt-3">
+                <a
+                  href="/subjects"
+                  className="inline-block px-4 py-2 text-white bg-orange-500 rounded hover:bg-orange-600"
+                >
+                  과목 등록하러 가기
+                </a>
+              </div>
+            </article>
           ) : (
-            <></>
+            <article className="p-4 bg-white rounded shadow-sm">
+              <h3 className="font-semibold">문제 생성 대기 중</h3>
+              <p className="mt-2 text-sm text-gray-700">
+                문제를 생성하는 중입니다...
+              </p>
+            </article>
           )}
         </div>
       </main>
