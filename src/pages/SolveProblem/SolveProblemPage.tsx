@@ -48,7 +48,7 @@ const SolveProblemPage = () => {
     setScore(0);
     setAttempted(0);
     setShowSummary(false);
-    
+
     const res = await generateFiveMCQ(
       registeredSubject,
       estimatedTime ?? undefined
@@ -66,7 +66,13 @@ const SolveProblemPage = () => {
   const handleSubmitAnswer = () => {
     if (!problems) return;
     const p = problems[currentIndex];
-    if (selectedIndex === null) return;
+
+    // 문제를 선택하지 않고 제출 버튼을 누르면 알림 표시
+    if (selectedIndex === null) {
+      alert("문제를 풀어주세요!");
+      return;
+    }
+
     const chosen = p.options[selectedIndex];
     const correct =
       String(p.answer).trim().toLowerCase() ===
@@ -79,6 +85,13 @@ const SolveProblemPage = () => {
 
   const handleNext = () => {
     if (!problems) return;
+
+    // 제출하지 않고 다음 버튼을 누르면 알림 표시
+    if (!submitted) {
+      alert("제출 버튼을 눌러주세요!");
+      return;
+    }
+
     const next = currentIndex + 1;
     if (next >= problems.length) {
       setProblems(null);
